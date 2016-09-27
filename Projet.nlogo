@@ -445,7 +445,7 @@ to convois-think
 
     ; Deplacement des leaders sur le chemin AStar
     ask convois with [leader? and not finished? and not dead?] [ ; Tant qu'on n'a pas atteint le but
-      ;move-convoi-naive ; deplacement naif sans AStar
+      ; voi-naive ; deplacement naif sans AStar
 
       ; Recupere le plan AStar
       let my-as-path item (who - first-car) as-path
@@ -562,15 +562,41 @@ to move-convoi [goal slowdown? cortege?]
   set pitch 0 ; make sure there's no pitch ever, else the car will disappear in the ground
   fd tmp-speed ; Avance
 end
+
+to go
+
+  if  mission-completed? [
+    show "MISSION ACCOMPLIE !"
+    stop ]
+
+  if  mission-failed? [
+    show "PERDU !"
+    stop ]
+
+  convois-think
+
+  ask convois [
+    if to-protect? [
+      if finished? [
+        set mission-completed? true
+        stop ]
+      if dead?[
+        set mission-failed? true
+        stop
+      ]
+    ]
+  ]
+  tick
+end
 @#$#@#$#@
 GRAPHICS-WINDOW
 0
 0
-439
-460
+414
+435
 -1
 -1
-13.0
+4.0
 1
 10
 1
@@ -581,9 +607,9 @@ GRAPHICS-WINDOW
 1
 1
 0
-32
+100
 0
-32
+100
 0
 0
 1
@@ -669,7 +695,7 @@ INPUTBOX
 251
 114
 nb-lakes
-2
+5
 1
 0
 Number
@@ -680,7 +706,7 @@ INPUTBOX
 329
 114
 nb-rivers
-2
+3
 1
 0
 Number
@@ -691,7 +717,7 @@ INPUTBOX
 581
 260
 astar-faster
-20
+10
 1
 0
 Number
@@ -702,7 +728,7 @@ INPUTBOX
 581
 334
 astar-max-depth
-1000
+10000
 1
 0
 Number
@@ -736,7 +762,7 @@ SWITCH
 368
 astar-visu-more
 astar-visu-more
-1
+0
 1
 -1000
 
@@ -794,6 +820,23 @@ TEXTBOX
 A*
 12
 0.0
+1
+
+BUTTON
+105
+385
+168
+418
+NIL
+go
+T
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
 1
 
 @#$#@#$#@
