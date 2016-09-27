@@ -277,9 +277,6 @@ to setup-enemies-ped
      setxyz random-xcor random-ycor solAlt
     ]
   ]
-
-
-
 end
 
 
@@ -598,11 +595,63 @@ to move-convoi [goal slowdown? cortege?]
 
   ; Deplacement!
   set pitch 0 ; make sure there's no pitch ever, else the car will disappear in the ground
-  fd tmp-speed ; Avance
+  fd tmp-speed
+ ; Avance
+end
+
+
+;-----------
+;  ENEMIES_PED
+;-----------
+
+to enemies-think
+  ;Boucle principale des ennemies, on appel le think specifique a chaque type d'ennemi
+  enemies-ped-think
+end
+
+
+to enemies-ped-think
+  ;Boucle principale des ennemies terrestre
+  ask enemies-ped [
+      ;Premiere chose, on regarde autour
+      enemies-ped-look
+      ;Ensuite on met a jour les intentions
+      ;enemies-ped-process-intentions
+      ;Enfin on execute les intentions
+      ;enemies-ped-execute-intentions
+   ]
+end
+
+to enemies-ped-look
+  ;Analyse de l'environement et mise a jour de croyance
+
+  let prox other turtles in-radius (enemies-ped-vision)
+
+  foreach  sort-on [who] prox [
+    ; On recense les enemy et allies afin de mettre a jour la liste de croyances
+    if [breed] of ? = enemies-ped [ ; si ? est un ennemies a pied
+       let bel create-belief (word "ally" ([who] of ?))  list ([xcor] of ?) ([ycor] of ?) ; on creer un belief avec comme type "ally "+ son id
+       if exist-beliefs-of-type belief-type bel [ remove-belief bel ] ; On efface les anciennes informations relative à ça position [ NOTE : penser a ajouter le temps pour permettre la fusion de connaissances ]
+       add-belief bel ; On l'ajoute à la liste
+    ]
+    if [breed] of ? = convois [ ; Meme chose avec les convois
+       let bel create-belief (word "enemy" ([who] of ?))  list ([xcor] of ?) ([ycor] of ?)
+       if exist-beliefs-of-type belief-type bel [ remove-belief bel ]
+       add-belief bel
+    ]
+    ; [ NOTE : ne fonctionne pas encore : creer une nouvelle entree à chaque deplacement de convoi ]
+  ]
+  show beliefs
+  show "----"
+
+end
+
+to enemies-ped-manage-intentions
+
 end
 
 to go
-
+  ; Condition d'arret de la simulation
   if  mission-completed? [
     show "MISSION ACCOMPLIE !"
     stop ]
@@ -611,20 +660,25 @@ to go
     show "PERDU !"
     stop ]
 
+
+  enemies-think
+
   convois-think
 
+  check-simu-over
+
+  tick
+end
+
+
+to check-simu-over
+  ; La simulation termine lorsque le convoi transportant les POKERAR atteint l'arrivee ou meurt
   ask convois [
     if to-protect? [
-      if finished? [
-        set mission-completed? true
-        stop ]
-      if dead?[
-        set mission-failed? true
-        stop
-      ]
+      if finished? [ set mission-completed? true ]
+      if dead?[ set mission-failed? true ]
     ]
   ]
-  tick
 end
 
 
@@ -942,8 +996,8 @@ end
 GRAPHICS-WINDOW
 0
 0
-414
-435
+245
+115
 -1
 -1
 4.0
@@ -957,9 +1011,9 @@ GRAPHICS-WINDOW
 1
 1
 0
-100
+20
 0
-100
+20
 0
 0
 1
@@ -1045,7 +1099,7 @@ INPUTBOX
 251
 114
 nb-lakes
-5
+0
 1
 0
 Number
@@ -1056,7 +1110,7 @@ INPUTBOX
 329
 114
 nb-rivers
-3
+1
 1
 0
 Number
@@ -1123,7 +1177,7 @@ SWITCH
 320
 astar-visu
 astar-visu
-0
+1
 1
 -1000
 
@@ -1238,7 +1292,7 @@ INPUTBOX
 626
 539
 enemies-ped-com-radius
-10
+100
 1
 0
 Number
@@ -1249,7 +1303,7 @@ INPUTBOX
 783
 539
 enemies-ped-vision
-7
+70
 1
 0
 Number
