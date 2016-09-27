@@ -1,0 +1,9 @@
+Carte aléatoire
+Base
+Destination
+Convoi : leader + vehicule critique, reste des vehicules (follow the leader)
+A* : déplacement véhicule chemin initial
+Diff types d’ennemis
+Diff comportements en cas d’attaque (diff leaders, diff chemins)
+Drones : ressources limitées, répartitions des rôles (exploration, protection, partage d’infos)
+Communications : inter-drones, drones/sol, màj
