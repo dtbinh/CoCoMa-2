@@ -34,15 +34,7 @@ convois-own[incoming-queue
   last-send-time ; communication historical time-stamp
   ]
 
-enemies-ped-own[
- beliefs
- intentions
- life
- dead?
- speed maxdir
- target ; Convoi vise
- explore-target ; Zone d'exploration vise
-]
+
 
 
 to go
@@ -343,7 +335,7 @@ INPUTBOX
 118
 540
 nb-enemies-ped
-2
+20
 1
 0
 Number
@@ -365,7 +357,7 @@ INPUTBOX
 457
 540
 enemies-ped-speed-coef
-1
+2
 1
 0
 Number
@@ -376,7 +368,7 @@ INPUTBOX
 626
 539
 enemies-ped-com-radius
-100
+10
 1
 0
 Number
@@ -388,6 +380,17 @@ INPUTBOX
 539
 enemies-ped-vision
 70
+1
+0
+Number
+
+INPUTBOX
+13
+554
+168
+614
+enemies-ped-fire-range
+5
 1
 0
 Number

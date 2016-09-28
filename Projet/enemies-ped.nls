@@ -1,3 +1,13 @@
+enemies-ped-own[
+ beliefs
+ intentions
+ life
+ dead?
+ speed ; maxdir
+ target ; Convoi vise
+ explore-target ; Zone d'exploration vise
+]
+
 to setup-enemies-ped
   create-enemies-ped nb-enemies-ped [
     set beliefs []
@@ -5,7 +15,9 @@ to setup-enemies-ped
     set life max-enemies-ped-life
     set dead? false
     set speed 0.05 * simu-speed * enemies-ped-speed-coef
-    set maxdir 10 * simu-speed * enemies-ped-speed-coef
+    ;set maxdir 10 * simu-speed * enemies-ped-speed-coef
+    set target nobody
+    set explore-target nobody
     set shape "ninja"
 
     setxyz random-xcor random-ycor solAlt
@@ -21,23 +33,23 @@ to enemies-ped-think
       ;Premiere chose, on regarde autour
       enemies-ped-look
       ;Ensuite on met a jour les intentions
-     ; enemies-ped-manage-intentions
+      enemies-ped-manage-intentions
       ;Enfin on execute les intentions
-      ;enemies-ped-execute-intentions
+      enemies-ped-execute-intentions
    ]
 end
 
 to enemies-ped-look
   ;Analyse de l'environement et mise a jour de croyance
 
-  let prox other turtles in-radius (enemies-ped-vision)
+  let prox other turtles in-radius-nowrap (enemies-ped-vision)
 
   foreach  sort-on [who] prox [
     ; On recense les enemy et allies afin de mettre a jour la liste de croyances
     if [breed] of ? = enemies-ped [ ; si ? est un ennemies a pied
        ; On creer un belief avec comme type "ally "+ son id [ NOTE : deux espace apres ally afin de pouvoir recuperer l'id de la meme maniere pour les ennemies
        ; Le contenu du belief est une liste contenant les coordonnees x et y de l'allie/ennemie ainsi que le moment ou il a ete vu [ NOTE : z necessaire ? ]
-       let bel create-belief (word "ally  " ([who] of ?))  list [xcor] of ? [ycor] of ? ;(ticks)
+       let bel create-belief (word "ally  " ([who] of ?))  list [xcor] of ? [ycor] of ? ;ticks
        remove-beliefs-of-type belief-type bel ; On efface les anciennes informations relative à ça position
        add-belief bel ; On l'ajoute à la liste
     ]
@@ -48,26 +60,63 @@ to enemies-ped-look
        add-belief bel
     ]
   ]
-  ;if debug [
-   ;show beliefs
-   ;show "----"
-  ;]
+  if debug [
+   show beliefs
+  ]
 end
 
-;to enemies-ped-manage-intentions
-  ; if target != nobody and ( intention with type "attack" is null )
-  ;    if distance target < fire-radius
-  ;        kill it !
-  ;    else
-  ;        follow-target
-  ; else
-  ;    if explore-target
-  ;
-  ;
-  ;
-  ;
-;end
+to set-target
+  
+  if target != nobody [ stop ] ; [ NOTE : on aura surement envie de faire autre chose par la suite, par exemple changer de cible si on en repere une plus proche ]
+  
+  foreach beliefs [ 
+    if substring first ? 0 5 = "enemy"[
+      let tmp turtle read-from-string substring first ? 6 7
+      if target = nobody or distance tmp < distance target [ ; [ NOTE : Attention à la WARP-ZONE ! ]
+        set target tmp 
+      ]
+    ]
+  ]
+  
+  if target != nobody [
+    add-intention "chase-target" "chase-target?"
+  ]
+  
+end
 
-;to enemies-ped-execute-intentions
+to-report chase-target?
+  let tmp not ( ( [dead?] of target ) or ( distance-nowrap target > enemies-ped-vision ) )
+  if tmp [ set target nobody ]
+  report  tmp
+end
 
-;end
+to chase-target
+  
+  
+  if distance-nowrap target < enemies-ped-fire-range [
+    shoot-target
+  ]
+  if distance-nowrap target < enemies-ped-vision [
+    follow-target
+  ]
+  
+end
+
+to follow-target
+  face-nowrap target
+  if [obstacle?] of patch-ahead speed [ stop ] ; BOF BOF
+  fd speed
+end
+
+to shoot-target
+  
+end
+
+
+to enemies-ped-manage-intentions
+  set-target
+end
+
+to enemies-ped-execute-intentions
+  execute-intentions
+end
