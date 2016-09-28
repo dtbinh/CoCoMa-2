@@ -630,20 +630,24 @@ to enemies-ped-look
   foreach  sort-on [who] prox [
     ; On recense les enemy et allies afin de mettre a jour la liste de croyances
     if [breed] of ? = enemies-ped [ ; si ? est un ennemies a pied
-       let bel create-belief (word "ally" ([who] of ?))  list ([xcor] of ?) ([ycor] of ?) ; on creer un belief avec comme type "ally "+ son id
-       if exist-beliefs-of-type belief-type bel [ remove-belief bel ] ; On efface les anciennes informations relative à ça position [ NOTE : penser a ajouter le temps pour permettre la fusion de connaissances ]
+       ; On creer un belief avec comme type "ally "+ son id [ NOTE : deux espace apres ally afin de pouvoir recuperer l'id de la meme maniere pour les ennemies
+       ; Le contenu du belief est une liste contenant les coordonnees x et y de l'allie/ennemie ainsi que le moment ou il a ete vu [ NOTE : z necessaire ? ]
+       let bel create-belief (word "ally  " ([who] of ?))  list ([xcor] of ?) ([ycor] of ?) ticks
+       remove-beliefs-of-type belief-type bel ; On efface les anciennes informations relative à ça position
        add-belief bel ; On l'ajoute à la liste
     ]
     if [breed] of ? = convois [ ; Meme chose avec les convois
-       let bel create-belief (word "enemy" ([who] of ?))  list ([xcor] of ?) ([ycor] of ?)
-       if exist-beliefs-of-type belief-type bel [ remove-belief bel ]
+       let bel create-belief (word "enemy " ([who] of ?))  list ([xcor] of ?) ([ycor] of ?) ticks
+       remove-beliefs-of-type belief-type bel
+       ;if exist-beliefs-of-type belief-type bel [ remove-belief bel ]
        add-belief bel
     ]
     ; [ NOTE : ne fonctionne pas encore : creer une nouvelle entree à chaque deplacement de convoi ]
   ]
-  show beliefs
-  show "----"
-
+  if debug [
+   show beliefs
+   show "----"
+  ]
 end
 
 to enemies-ped-manage-intentions
@@ -767,6 +771,12 @@ to update-belief [bel]
    add-belief bel
 end
 
+to remove-beliefs-of-type [b-type]
+  let blfs filter [first ? = b-type] beliefs
+  foreach blfs [
+      remove-belief ?
+    ]
+end
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;; CODE FOR HANDLING INTENTIONS-A simple deliberative architecture
