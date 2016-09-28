@@ -1,8 +1,9 @@
-__includes ["libs.nls" "astar.nls" "setup.nls" "convois.nls" "enemies-ped.nls" "enemies.nls"]
+__includes ["libs.nls" "astar.nls" "setup.nls" "convois.nls" "enemies-ped.nls" "enemies.nls" "drones.nls"]
 
 breed [waypoints waypoint]
 breed [envconstructors envconstructor]
 breed [convois convoi]
+breed [drones drone]
 breed [enemies-ped enemy-ped]
 breed [HQs HQ]
 directed-link-breed [path-links path-link]
@@ -24,7 +25,8 @@ globals [mapAlt solAlt basseAlt hauteAlt ; variables topologiques Z discretise: 
 patches-own [obstacle? base? hangar? objectif? bridge? ; variables topologiques au niveau mapAlt, permet de definir les patchs praticables et ceux qui sont des obstacles
   as-closed as-heuristic as-prev-pos ; variables temporaires pour calculer les chemins AStar (effaces a chaque calcul de plan)
   ]
-convois-own[incoming-queue
+
+convois-own [incoming-queue
   finished? ; Is the goal reached ?
   leader?   ; car leading the convoi convoi
   to-protect? ; Should this car be protected at all cost ?
@@ -33,8 +35,6 @@ convois-own[incoming-queue
   speed maxdir ; maximal speed of a car, and max angle
   last-send-time ; communication historical time-stamp
   ]
-
-
 
 
 to go
@@ -52,6 +52,8 @@ to go
 
   convois-think
 
+  drones-think
+
   check-simu-over
 
   tick
@@ -67,7 +69,6 @@ to check-simu-over
     ]
   ]
 end
-
 @#$#@#$#@
 GRAPHICS-WINDOW
 0
@@ -253,7 +254,7 @@ SWITCH
 320
 astar-visu
 astar-visu
-1
+0
 1
 -1000
 
@@ -391,6 +392,60 @@ INPUTBOX
 614
 enemies-ped-fire-range
 5
+1
+0
+Number
+
+TEXTBOX
+18
+625
+168
+643
+Drones
+12
+0.0
+1
+
+INPUTBOX
+18
+660
+128
+720
+nb-drones
+50
+1
+0
+Number
+
+INPUTBOX
+137
+660
+282
+720
+max-drone-fuel
+100
+1
+0
+Number
+
+INPUTBOX
+295
+660
+450
+720
+drone-vision
+70
+1
+0
+Number
+
+INPUTBOX
+467
+660
+622
+720
+drone-fire-range
+10
 1
 0
 Number

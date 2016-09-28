@@ -21,8 +21,8 @@ to setup
     ]
   ]
   if not debug and not debug-verbose [no-display]
-  ;setup-drones
   setup-enemies
+  setup-drones
   ;setup-citizens
 ;  setup-hq
 

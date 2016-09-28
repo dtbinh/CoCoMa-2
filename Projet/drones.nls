@@ -1,0 +1,113 @@
+drones-own[
+ beliefs
+ intentions
+ fuel
+ dead?
+ protect ; convoy
+ target ; enemy
+ speed ; maxdir
+]
+
+to setup-drones
+  create-drones nb-drones [
+    set beliefs []
+    set intentions []
+    set fuel max-drone-fuel
+    set dead? false
+    set protect nobody
+    set target nobody
+    set speed 0.05 * simu-speed
+    set shape "airplane"
+    set color white
+
+    setxyz random-xcor random-ycor solAlt
+    while [(pcolor < 50)  or ( pcolor > 70 )]  [
+     setxyz random-xcor random-ycor solAlt
+    ]
+  ]
+end
+
+to drones-think
+;  Boucle principale des drones
+  ask drones [
+;    Premiere chose, on regarde autour
+    drones-look
+;    Ensuite on met a jour les intentions
+    drones-manage-intentions
+;    Enfin on execute les intentions
+    drones-execute-intentions
+   ]
+end
+
+to drones-look
+;  Analyse de l'environement et mise a jour de croyance
+
+  let proximate other turtles in-radius-nowrap (drone-vision)
+  foreach sort-on [who] proximate [
+    ; si ? est un ennemies a pied
+    if [breed] of ? = enemies-ped [
+       let b create-belief (word "enemy " ([who] of ?)) list [xcor] of ? [ycor] of ?
+       remove-beliefs-of-type belief-type b ; On efface les anciennes informations relative à ça position
+       add-belief b ; On l'ajoute à la liste
+    ]
+    ; si ? est une voiture
+    if [breed] of ? = convois [ ;
+       let b create-belief (word "protect " ([who] of ?)) list [xcor] of ? [ycor] of ? ; ticks [ NOTE : l'ajout de ticks comme coordonnee de temps provoque un "Expected command" ...
+       remove-beliefs-of-type belief-type b
+       add-belief b
+    ]
+  ]
+  if debug [ show beliefs ]
+end
+
+to set-protect
+  if protect != nobody [ stop ]
+  
+  foreach beliefs [ 
+    if substring first ? 0 7 = "protect" [
+      let tmp turtle read-from-string substring first ? 8 9
+      if protect = nobody [
+        set protect tmp
+      ]
+    ]
+    if substring first ? 0 5 = "enemy" [
+      let tmp turtle read-from-string substring first ? 6 7
+      set target tmp
+    ]
+  ]
+  
+  if protect != nobody [
+    add-intention "follow-protect" "follow-protect?"
+  ]
+;    if target != nobody [ add-intention "shoot-enemy" "shoot-enemy" ]
+end
+
+to-report follow-protect?
+  let tmp distance-nowrap protect < drone-vision
+  if not tmp [ set protect nobody ]
+  report tmp
+end
+
+to follow-protect
+  face-nowrap protect
+  fd speed
+  ;show [xcor + ycor] of turtle 5
+end
+
+;to-report shoot-enemy?
+;  let tmp distance-nowrap target < drone-fire-range
+;  if not tmp [ set target nobody ]
+;  report tmp
+;end
+;
+;to shoot-enemy
+;  
+;end
+
+to drones-manage-intentions
+  set-protect
+end
+
+to drones-execute-intentions
+  execute-intentions
+end
