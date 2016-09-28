@@ -1,0 +1,4 @@
+to enemies-think
+  ;Boucle principale des ennemies, on appel le think specifique a chaque type d'ennemi
+  enemies-ped-think
+end

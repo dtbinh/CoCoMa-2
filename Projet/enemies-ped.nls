@@ -1,0 +1,73 @@
+to setup-enemies-ped
+  create-enemies-ped nb-enemies-ped [
+    set beliefs []
+    set intentions []
+    set life max-enemies-ped-life
+    set dead? false
+    set speed 0.05 * simu-speed * enemies-ped-speed-coef
+    set maxdir 10 * simu-speed * enemies-ped-speed-coef
+    set shape "ninja"
+
+    setxyz random-xcor random-ycor solAlt
+    while [(pcolor < 50)  or ( pcolor > 70 )]  [
+     setxyz random-xcor random-ycor solAlt
+    ]
+  ]
+end
+
+to enemies-ped-think
+  ;Boucle principale des ennemies terrestre
+  ask enemies-ped [
+      ;Premiere chose, on regarde autour
+      enemies-ped-look
+      ;Ensuite on met a jour les intentions
+     ; enemies-ped-manage-intentions
+      ;Enfin on execute les intentions
+      ;enemies-ped-execute-intentions
+   ]
+end
+
+to enemies-ped-look
+  ;Analyse de l'environement et mise a jour de croyance
+
+  let prox other turtles in-radius (enemies-ped-vision)
+
+  foreach  sort-on [who] prox [
+    ; On recense les enemy et allies afin de mettre a jour la liste de croyances
+    if [breed] of ? = enemies-ped [ ; si ? est un ennemies a pied
+       ; On creer un belief avec comme type "ally "+ son id [ NOTE : deux espace apres ally afin de pouvoir recuperer l'id de la meme maniere pour les ennemies
+       ; Le contenu du belief est une liste contenant les coordonnees x et y de l'allie/ennemie ainsi que le moment ou il a ete vu [ NOTE : z necessaire ? ]
+       let bel create-belief (word "ally  " ([who] of ?))  list [xcor] of ? [ycor] of ? ;(ticks)
+       remove-beliefs-of-type belief-type bel ; On efface les anciennes informations relative à ça position
+       add-belief bel ; On l'ajoute à la liste
+    ]
+    if [breed] of ? = convois [ ; Meme chose avec les convois
+       let bel create-belief (word "enemy " ([who] of ?))  list ([xcor] of ?) ([ycor] of ?) ; ticks [ NOTE : l'ajout de ticks comme coordonnee de temps provoque un "Expected command" ...
+       remove-beliefs-of-type belief-type bel
+       ;if exist-beliefs-of-type belief-type bel [ remove-belief bel ]
+       add-belief bel
+    ]
+  ]
+  ;if debug [
+   ;show beliefs
+   ;show "----"
+  ;]
+end
+
+;to enemies-ped-manage-intentions
+  ; if target != nobody and ( intention with type "attack" is null )
+  ;    if distance target < fire-radius
+  ;        kill it !
+  ;    else
+  ;        follow-target
+  ; else
+  ;    if explore-target
+  ;
+  ;
+  ;
+  ;
+;end
+
+;to enemies-ped-execute-intentions
+
+;end
