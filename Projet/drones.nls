@@ -16,7 +16,7 @@ to setup-drones
     set dead? false
     set protect nobody
     set target nobody
-    set speed 0.05 * simu-speed
+    set speed 0.05 * simu-speed 
     set shape "airplane"
     set color white
 
@@ -47,12 +47,12 @@ to drones-look
     ; si ? est un ennemies a pied
     if [breed] of ? = enemies-ped [
        let b create-belief (word "enemy " ([who] of ?)) list [xcor] of ? [ycor] of ?
-       remove-beliefs-of-type belief-type b ; On efface les anciennes informations relative à ça position
+       remove-beliefs-of-type belief-type b ; On efface les anciennes informations relative à sa position
        add-belief b ; On l'ajoute à la liste
     ]
     ; si ? est une voiture
     if [breed] of ? = convois [ ;
-       let b create-belief (word "protect " ([who] of ?)) list [xcor] of ? [ycor] of ? ; ticks [ NOTE : l'ajout de ticks comme coordonnee de temps provoque un "Expected command" ...
+       let b create-belief (word "protect " ([who] of ?)) list [xcor] of ? [ycor] of ? 
        remove-beliefs-of-type belief-type b
        add-belief b
     ]
@@ -91,7 +91,8 @@ end
 to follow-protect
   face-nowrap protect
   fd speed
-  ;show [xcor + ycor] of turtle 5
+  show speed
+  show intentions
 end
 
 ;to-report shoot-enemy?

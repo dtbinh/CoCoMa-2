@@ -1,0 +1,29 @@
+bullets-own [
+ target ; La turtle visee initialement
+ side ; enemy / ally
+ speed
+ damage ; Nombre de degats qui seront inflige a la cible
+ 
+]
+
+
+to create-bullet [btarget bside bdamage]
+  
+  set target btarget
+  set side bside
+  set damage bdamage
+  set speed simu-speed * bullets-speed
+  set shape "arrow 3"
+  face-nowrap target
+ 
+end
+
+to update-bullets
+  ; Mise a jour d'une balle
+  
+  if distance-nowrap < 1 [
+    
+    
+  ]
+  
+  if 

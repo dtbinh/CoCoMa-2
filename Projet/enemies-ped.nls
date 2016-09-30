@@ -47,17 +47,14 @@ to enemies-ped-look
   foreach  sort-on [who] prox [
     ; On recense les enemy et allies afin de mettre a jour la liste de croyances
     if [breed] of ? = enemies-ped [ ; si ? est un ennemies a pied
-       ; On creer un belief avec comme type "ally "+ son id [ NOTE : deux espace apres ally afin de pouvoir recuperer l'id de la meme maniere pour les ennemies
-       ; Le contenu du belief est une liste contenant les coordonnees x et y de l'allie/ennemie ainsi que le moment ou il a ete vu [ NOTE : z necessaire ? ]
-       let bel create-belief (word "ally  " ([who] of ?))  list [xcor] of ? [ycor] of ? ;ticks
-       remove-beliefs-of-type belief-type bel ; On efface les anciennes informations relative à ça position
-       add-belief bel ; On l'ajoute à la liste
+       ; On creer un belief avec comme type "ally"
+       ; Le contenu du belief est une liste contenant l'id, les coordonnees x et y de l'allie/ennemie ainsi que le moment ou il a ete vu [ NOTE : z necessaire ? ]
+       let bel create-belief "ally" (list [who] of ? [xcor] of ? [ycor] of ?) ; ticks
+       maj-belief-turtle bel ; Mise a jour des croyance relative a cette turtle
     ]
     if [breed] of ? = convois [ ; Meme chose avec les convois
-       let bel create-belief (word "enemy " ([who] of ?))  list ([xcor] of ?) ([ycor] of ?) ; ticks [ NOTE : l'ajout de ticks comme coordonnee de temps provoque un "Expected command" ...
-       remove-beliefs-of-type belief-type bel
-       ;if exist-beliefs-of-type belief-type bel [ remove-belief bel ]
-       add-belief bel
+       let bel create-belief "enemy"  (list [who] of ? [xcor] of ? [ycor] of ?) ; ticks [ NOTE : l'ajout de ticks comme coordonnee de temps provoque un "Expected command" ...
+       maj-belief-turtle bel
     ]
   ]
   if debug [
@@ -66,57 +63,88 @@ to enemies-ped-look
 end
 
 to set-target
-  
+  ; On recherche un ennemi (convoi) dans la base de recherche
   if target != nobody [ stop ] ; [ NOTE : on aura surement envie de faire autre chose par la suite, par exemple changer de cible si on en repere une plus proche ]
   
-  foreach beliefs [ 
-    if substring first ? 0 5 = "enemy"[
-      let tmp turtle read-from-string substring first ? 6 7
-      if target = nobody or distance tmp < distance target [ ; [ NOTE : Attention à la WARP-ZONE ! ]
+  foreach beliefs [ ; [ On pourait utiliser filter [...] pour potentielement plus de performances 
+    if first ? = "enemy"[ ; Pour tout les ennemies recenser
+      let tmp turtle first item 1 ? 
+      if target = nobody or distance tmp < distance target [ ; On recherche le plus proche [ NOTE : Attention à la WARP-ZONE ! ]
         set target tmp 
       ]
     ]
   ]
-  
-  if target != nobody [
+
+  if target != nobody [ ; Si une cible a ete trouvee, on ajoute une intention de type chasse
     add-intention "chase-target" "chase-target?"
   ]
   
 end
 
+to maj-belief-turtle [bel]
+  ; Mise a jour des informations relatives a une turtle, sert a eviter le cumul d'information et les doublons
+  let old beliefs-of-type belief-type bel
+  foreach old [
+    if first item 1 ? = first item 1 bel [ 
+      ; Si on trouve un ancien belief avec le meme id que le nouveau
+      ; ici on pourra mettre une conditionelle temporel
+      remove-belief ? ; on le supprime pour ne garder que le plus recent
+      stop
+    ]
+  ]
+  add-belief bel ; On ajoute alors les nouvelles informations
+end
+
 to-report chase-target?
+  ; Si la cible est morte ou hors du champ de vision, on arrete
   let tmp not ( ( [dead?] of target ) or ( distance-nowrap target > enemies-ped-vision ) )
   if tmp [ set target nobody ]
   report  tmp
 end
 
 to chase-target
-  
-  
-  if distance-nowrap target < enemies-ped-fire-range [
-    shoot-target
+  if distance-nowrap target < enemies-ped-fire-range [ ; Si la cible est a portee de tir
+    shoot-target ; On tire
   ]
   if distance-nowrap target < enemies-ped-vision [
-    follow-target
+    follow-target ; Sinon, si elle est encore visible, on la suit
   ]
-  
 end
 
 to follow-target
-  face-nowrap target
+  face-nowrap target ; On fait face a la cible
   if [obstacle?] of patch-ahead speed [ stop ] ; BOF BOF
-  fd speed
+  fd speed ; On avance vers elle
 end
 
 to shoot-target
   
 end
 
+to set-explore-target
+  set explore-target patch random-xcor random-ycor mapAlt
+ ; add-intention "explore" "explore?"
+end
 
 to enemies-ped-manage-intentions
   set-target
+  if target = nobody[
+    set-explore-target
+  ]
+    
 end
 
 to enemies-ped-execute-intentions
   execute-intentions
 end
+
+
+
+
+
+
+
+
+
+
+

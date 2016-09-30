@@ -1,3 +1,12 @@
+convois-own [incoming-queue
+  finished? ; Is the goal reached ?
+  leader?   ; car leading the convoi convoi
+  to-protect? ; Should this car be protected at all cost ?
+  genlongpath? ; Should the leader compute a new path (but not shortest) ?
+  dead?
+  speed maxdir ; maximal speed of a car, and max angle
+  last-send-time ; communication historical time-stamp
+  ]
 
 to setup-convois
   if nb-cars > 0 [
