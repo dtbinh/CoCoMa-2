@@ -77,7 +77,7 @@ to set-target
   foreach beliefs [ ; [ On pourait utiliser filter [...] pour potentielement plus de performances 
     if first ? = "enemy"[ ; Pour tout les ennemies recenser
       let tmp turtle first item 1 ? 
-      if target = nobody or distance tmp < distance target [ ; On recherche le plus proche [ NOTE : Attention à la WARP-ZONE ! ]
+      if tmp != nobody and (target = nobody or distance tmp < distance target) [ ; On recherche le plus proche [ NOTE : Attention à la WARP-ZONE ! ]
         set target tmp 
       ]
     ]
@@ -131,8 +131,15 @@ to shoot-target
     sound:play-note "GUNSHOT" 128 64 0.2
     ;fire-bullet target xcor ycor zcor
     set last-shot ticks
+    
+    hatch-bullets 1 [
+      set damage 10
+      set speed simu-speed * bullets-speed
+      set shape "arrow 3"
+      face-nowrap target
+      setxyz xcor ycor zcor
+    ]
   ]
-  
 end
 
 to set-explore-target

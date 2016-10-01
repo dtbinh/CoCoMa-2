@@ -36,22 +36,27 @@ end
 to update-bullets
   ; Mise a jour d'une balle
   
-  if distance-nowrap target < 1 [ ; [ NOTE : ici les balle ne touchent que leurs cible et passe a travers quiconque sera sur leur chemin, la variable side ne sert alors a rien ]
-    ; hit
-    ask target [
-     set life life - damage 
-     if life <= 0 [ 
-       set dead? true
+  ask bullets [
+  
+    if not [dead?] of target [
+      if distance-nowrap target < 1 [ ; [ NOTE : ici les balle ne touchent que leurs cible et passe a travers quiconque sera sur leur chemin, la variable side ne sert alors a rien ]
+                                      ; hit
+        ask target [
+          set life life - [damage] of myself 
+          if life <= 0 [ 
+            set dead? true
+          ]
+        ]
+        die
       ]
-     die
+      
+      if xcor > world-width or xcor < 0 or ycor > world-height or ycor < 0 [
+        ; Si on entre dans la warpzone
+        die ; On y reste
+      ]
+      
+      fd speed
     ]
   ]
-  
-  if xcor > world-width or xcor < 0 or ycor > world-height or ycor < 0 [
-    ; Si on entre dans la warpzone
-    die ; On y reste
-  ]
-  
-  fd speed
   
 end
