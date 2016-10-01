@@ -1,4 +1,4 @@
-__includes ["libs.nls" "astar.nls" "setup.nls" "convois.nls" "enemies-ped.nls" "enemies.nls" "drones.nls" "bullets.nls"]
+__includes ["libs.nls" "astar.nls" "setup.nls" "convois.nls" "enemies-ped.nls" "enemies.nls" "drones.nls" "bullets.nls" "globals.nls"]
 extensions [sound]
 
 breed [waypoints waypoint]

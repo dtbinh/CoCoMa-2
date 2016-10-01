@@ -7,6 +7,7 @@ convois-own [incoming-queue
   speed maxdir ; maximal speed of a car, and max angle
   last-send-time ; communication historical time-stamp
   life ; Current health points
+  side ; red or blue
   ]
 
 to setup-convois
@@ -40,6 +41,7 @@ to setup-convois
       set genlongpath? false
       set dead? false
       set life max-convois-life
+      set side "blue"
 
       ; Visu
       set label who ; display the car names
