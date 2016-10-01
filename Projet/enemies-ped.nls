@@ -6,6 +6,7 @@ enemies-ped-own[
  speed ; maxdir
  target ; Convoi vise
  explore-target ; Zone d'exploration vise
+ last-shot ; date du dernier tir, permet de simuler une cadence de tir
 ]
 
 to setup-enemies-ped
@@ -19,6 +20,7 @@ to setup-enemies-ped
     set target nobody
     set explore-target nobody
     set shape "ninja"
+    set last-shot 0
 
     setxyz random-xcor random-ycor solAlt
     while [(pcolor < 50)  or ( pcolor > 70 )]  [
@@ -29,13 +31,19 @@ end
 
 to enemies-ped-think
   ;Boucle principale des ennemies terrestre
+  
   ask enemies-ped [
-      ;Premiere chose, on regarde autour
-      enemies-ped-look
-      ;Ensuite on met a jour les intentions
-      enemies-ped-manage-intentions
-      ;Enfin on execute les intentions
-      enemies-ped-execute-intentions
+    
+    if dead? [ ; Si on est mort
+      die ; On meurt
+    ]
+    
+    ;Premiere chose, on regarde autour
+    enemies-ped-look
+    ;Ensuite on met a jour les intentions
+    enemies-ped-manage-intentions
+    ;Enfin on execute les intentions
+    enemies-ped-execute-intentions
    ]
 end
 
@@ -119,6 +127,12 @@ end
 
 to shoot-target
   
+  if ticks - last-shot > 15  [ ; Attention : la cadence de tir ne devrais pas etre defini ici
+    sound:play-note "GUNSHOT" 128 64 0.2
+    ;fire-bullet target xcor ycor zcor
+    set last-shot ticks
+  ]
+  
 end
 
 to set-explore-target
@@ -128,7 +142,7 @@ end
 
 to enemies-ped-manage-intentions
   set-target
-  if target = nobody[
+  if target = nobody [
     set-explore-target
   ]
     

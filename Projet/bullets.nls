@@ -1,29 +1,57 @@
 bullets-own [
  target ; La turtle visee initialement
- side ; enemy / ally
  speed
  damage ; Nombre de degats qui seront inflige a la cible
  
 ]
 
 
-to create-bullet [btarget bside bdamage]
+to fire-bullet [btarget bxcor bycor bzcor]
   
-  set target btarget
-  set side bside
-  set damage bdamage
-  set speed simu-speed * bullets-speed
-  set shape "arrow 3"
-  face-nowrap target
+  ;set bullets-to-create lput [btarget bxcor bycor bzcor] bullets-to-create
+  
+  if play-sounds [
+    ;sound:play-note "GUNSHOT" 128 64 0.2
+  ]
  
 end
+
+to create-tick-bullets 
+    foreach bullets-to-create [
+     create-bullets 1 [
+       set target first ?
+       set damage 10
+       setxyz item 1 ? item 2 ? item 3 ?
+       set speed simu-speed * bullets-speed
+       set shape "arrow 3"
+       face-nowrap target
+      ] 
+    ]
+    set bullets-to-create []
+end
+
+
+
 
 to update-bullets
   ; Mise a jour d'une balle
   
-  if distance-nowrap < 1 [
-    
-    
+  if distance-nowrap target < 1 [ ; [ NOTE : ici les balle ne touchent que leurs cible et passe a travers quiconque sera sur leur chemin, la variable side ne sert alors a rien ]
+    ; hit
+    ask target [
+     set life life - damage 
+     if life <= 0 [ 
+       set dead? true
+      ]
+     die
+    ]
   ]
   
-  if 
+  if xcor > world-width or xcor < 0 or ycor > world-height or ycor < 0 [
+    ; Si on entre dans la warpzone
+    die ; On y reste
+  ]
+  
+  fd speed
+  
+end

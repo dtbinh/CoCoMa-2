@@ -1,4 +1,5 @@
 __includes ["libs.nls" "astar.nls" "setup.nls" "convois.nls" "enemies-ped.nls" "enemies.nls" "drones.nls" "bullets.nls"]
+extensions [sound]
 
 breed [waypoints waypoint]
 breed [envconstructors envconstructor]
@@ -21,6 +22,10 @@ globals [mapAlt solAlt basseAlt hauteAlt ; variables topologiques Z discretise: 
   is-movie-recording?
   show-intentions
   show-messages
+  play-sounds
+
+  bullets-to-create ; Liste remplie par les turtles qui ont tiree au dernier tick afin que l'observateur puisse les creer depuis on contexte
+
   ]
 
 patches-own [obstacle? base? hangar? objectif? bridge? ; variables topologiques au niveau mapAlt, permet de definir les patchs praticables et ceux qui sont des obstacles
@@ -97,7 +102,7 @@ SWITCH
 223
 debug
 debug
-0
+1
 1
 -1000
 
@@ -258,7 +263,7 @@ simu-speed
 simu-speed
 0
 10
-10
+1
 1
 1
 NIL
@@ -327,7 +332,7 @@ INPUTBOX
 118
 540
 nb-enemies-ped
-1
+20
 1
 0
 Number
@@ -349,7 +354,7 @@ INPUTBOX
 457
 540
 enemies-ped-speed-coef
-1.1
+0.7
 1
 0
 Number
@@ -360,7 +365,7 @@ INPUTBOX
 626
 539
 enemies-ped-com-radius
-10
+12
 1
 0
 Number
@@ -371,7 +376,7 @@ INPUTBOX
 783
 539
 enemies-ped-vision
-90
+10
 1
 0
 Number
@@ -382,7 +387,7 @@ INPUTBOX
 168
 614
 enemies-ped-fire-range
-5
+7
 1
 0
 Number
@@ -450,11 +455,22 @@ bullets-speed
 bullets-speed
 0
 10
-5
+1.7
 0.1
 1
 NIL
 HORIZONTAL
+
+INPUTBOX
+630
+382
+785
+442
+max-convois-life
+100
+1
+0
+Number
 
 @#$#@#$#@
 ## WHAT IS IT?

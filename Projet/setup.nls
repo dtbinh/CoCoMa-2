@@ -52,6 +52,10 @@ to setup-globals
 
   set show-intentions false
   set show-messages false
+  
+  set play-sounds true
+  
+  set bullets-to-create []
 end
 
 
