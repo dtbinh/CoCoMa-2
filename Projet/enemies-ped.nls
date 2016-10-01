@@ -7,6 +7,7 @@ enemies-ped-own[
  target ; Convoi vise
  explore-target ; Zone d'exploration vise
  last-shot ; date du dernier tir, permet de simuler une cadence de tir
+ side ; red / blue
 ]
 
 to setup-enemies-ped
@@ -35,7 +36,8 @@ to enemies-ped-think
   ask enemies-ped [
     
     if dead? [ ; Si on est mort
-      die ; On meurt
+      stop
+      ; die ; On meurt
     ]
     
     ;Premiere chose, on regarde autour
@@ -60,7 +62,7 @@ to enemies-ped-look
        let bel create-belief "ally" (list [who] of ? [xcor] of ? [ycor] of ?) ; ticks
        maj-belief-turtle bel ; Mise a jour des croyance relative a cette turtle
     ]
-    if [breed] of ? = convois [ ; Meme chose avec les convois
+    if [breed] of ? = convois and not [dead?] of ? [ ; Meme chose avec les convois
        let bel create-belief "enemy"  (list [who] of ? [xcor] of ? [ycor] of ?) ; ticks [ NOTE : l'ajout de ticks comme coordonnee de temps provoque un "Expected command" ...
        maj-belief-turtle bel
     ]
@@ -74,10 +76,12 @@ to set-target
   ; On recherche un ennemi (convoi) dans la base de recherche
   if target != nobody [ stop ] ; [ NOTE : on aura surement envie de faire autre chose par la suite, par exemple changer de cible si on en repere une plus proche ]
   
-  foreach beliefs [ ; [ On pourait utiliser filter [...] pour potentielement plus de performances 
+  foreach beliefs [ ; [ On pourait utiliser filter [...] pour potentielement plus de performances
+     
     if first ? = "enemy"[ ; Pour tout les ennemies recenser
       let tmp turtle first item 1 ? 
-      if tmp != nobody and (target = nobody or distance tmp < distance target) [ ; On recherche le plus proche [ NOTE : Attention à la WARP-ZONE ! ]
+ 
+      if tmp != nobody and not [dead?] of tmp and (target = nobody or distance tmp < distance target) [ ; On recherche le plus proche [ NOTE : Attention à la WARP-ZONE ! ]
         set target tmp 
       ]
     ]

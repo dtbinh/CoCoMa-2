@@ -455,9 +455,9 @@ SLIDER
 bullets-speed
 bullets-speed
 0
-10
-3.4
+5
 0.1
+0.05
 1
 NIL
 HORIZONTAL
