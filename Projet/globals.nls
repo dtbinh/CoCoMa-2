@@ -72,7 +72,7 @@ to chase-target
 end
 
 to shoot-target
-  if ticks - last-shot > 15  [ ; Attention : la cadence de tir ne devrais pas etre defini ici
+  if ticks - last-shot > 15 / simu-speed  [ ; Attention : la cadence de tir ne devrais pas etre defini ici
     sound:play-note "GUNSHOT" 128 64 0.2
     set last-shot ticks
     hatch-bullets 1 [ 

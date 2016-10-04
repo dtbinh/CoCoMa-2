@@ -29,8 +29,12 @@ to setup-enemies-ped
     set range enemies-ped-fire-range
 
     setxyz random-xcor random-ycor solAlt
-    while [(pcolor < 50)  or ( pcolor > 70 )]  [
-     setxyz random-xcor random-ycor solAlt
+    while [true] [
+      let p patch xcor ycor mapAlt
+      if [pcolor] of p >= 50 and [pcolor] of p < 70[
+        stop
+      ]
+      setxyz random-xcor random-ycor solAlt
     ]
   ]
 end
@@ -53,88 +57,6 @@ to enemies-ped-think
     enemies-ped-execute-intentions
    ]
 end
-
-;to enemies-ped-look
-;  ;Analyse de l'environement et mise a jour de croyance
-;
-;  let prox other turtles in-radius-nowrap (enemies-ped-vision)
-;
-;  foreach  sort-on [who] prox [
-;    ; On recense les enemy et allies afin de mettre a jour la liste de croyances
-;    if [breed] of ? = enemies-ped [ ; si ? est un ennemies a pied
-;       ; On creer un belief avec comme type "ally"
-;       ; Le contenu du belief est une liste contenant l'id, les coordonnees x et y de l'allie/ennemie ainsi que le moment ou il a ete vu [ NOTE : z necessaire ? ]
-;       let bel create-belief "ally" (list [who] of ? [xcor] of ? [ycor] of ?) ; ticks
-;       maj-belief-turtle bel ; Mise a jour des croyance relative a cette turtle
-;    ]
-;    if [breed] of ? = convois and not [dead?] of ? [ ; Meme chose avec les convois
-;       let bel create-belief "enemy"  (list [who] of ? [xcor] of ? [ycor] of ?) ; ticks [ NOTE : l'ajout de ticks comme coordonnee de temps provoque un "Expected command" ...
-;       maj-belief-turtle bel
-;    ]
-;  ]
-;  if debug [
-;   show beliefs
-;  ]
-;end
-
-;to set-target
-;  ; On recherche un ennemi (convoi) dans la base de recherche
-;  if target != nobody [ stop ] ; [ NOTE : on aura surement envie de faire autre chose par la suite, par exemple changer de cible si on en repere une plus proche ]
-;  
-;  foreach beliefs [ ; [ On pourait utiliser filter [...] pour potentielement plus de performances
-;     
-;    if first ? = "blue"[ ; Pour tout les ennemies recenser
-;      let tmp turtle first item 1 ? 
-; 
-;      if tmp != nobody and not [dead?] of tmp and (target = nobody or distance tmp < distance target) [ ; On recherche le plus proche [ NOTE : Attention à la WARP-ZONE ! ]
-;        set target tmp 
-;      ]
-;    ]
-;  ]
-;
-;  if target != nobody [ ; Si une cible a ete trouvee, on ajoute une intention de type chasse
-;    add-intention "chase-target" "chase-target?"
-;  ]
-;  
-;end
-
-;to-report chase-target?
-;  ; Si la cible est morte ou hors du champ de vision, on arrete
-;  let tmp not ( ( [dead?] of target ) or ( distance-nowrap target > enemies-ped-vision ) )
-;  if tmp [ set target nobody ]
-;  report  tmp
-;end
-;
-;to chase-target
-;  if distance-nowrap target < enemies-ped-fire-range [ ; Si la cible est a portee de tir
-;    shoot-target ; On tire
-;  ]
-;  if distance-nowrap target < enemies-ped-vision [
-;    follow-target ; Sinon, si elle est encore visible, on la suit
-;  ]
-;end
-
-;to follow-target
-;  face-nowrap target ; On fait face a la cible
-;  if [obstacle?] of patch-ahead speed [ stop ] ; BOF BOF
-;  fd speed ; On avance vers elle
-;end
-
-;to shoot-target
-;  if ticks - last-shot > 15  [ ; Attention : la cadence de tir ne devrais pas etre defini ici
-;    sound:play-note "GUNSHOT" 128 64 0.2
-;    ;fire-bullet target xcor ycor zcor
-;    set last-shot ticks
-;    
-;    hatch-bullets 1 [
-;      set damage 10
-;      set speed simu-speed * bullets-speed
-;      set shape "arrow 3"
-;      face-nowrap target
-;      setxyz xcor ycor zcor
-;    ]
-;  ]
-;end
 
 to set-explore-target
   set explore-target patch random-xcor random-ycor mapAlt

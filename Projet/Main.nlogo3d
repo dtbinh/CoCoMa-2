@@ -72,11 +72,11 @@ end
 GRAPHICS-WINDOW
 0
 0
-414
-435
+1020
+1041
 -1
 -1
-4.0
+10.0
 1
 10
 1
@@ -91,7 +91,7 @@ GRAPHICS-WINDOW
 0
 100
 0
-0
+10
 1
 0
 1
@@ -266,8 +266,8 @@ simu-speed
 simu-speed
 0
 10
-1
-1
+2
+.5
 1
 NIL
 HORIZONTAL
@@ -457,8 +457,8 @@ SLIDER
 bullets-speed
 bullets-speed
 0
-5
-0.4
+1
+1
 0.05
 1
 NIL
