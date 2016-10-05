@@ -1,49 +1,35 @@
 
 to setup
+    
   ; The setup generates environments until one of them is acceptable (the convoi can accomplish the mission)
   
-  show "PASS 1"
   let path-is-possible? false
   while [not path-is-possible?] [
-    show "PASS 2"
     clear-all
     if not debug and not debug-verbose [no-display] ; disable gui display to speedup processing, the time slider won't influence the setup procedure
-    show "PASS 3"
     setup-globals
-    show "PASS 4"
     setup-env
-    show "PASS 5"
     clear-turtles ; reinit the id of the agents
-    show "PASS 6"
     setup-convois ;
-    show "PASS 7"
     ifelse nb-cars <= 0 [
       set path-is-possible? true
     ]
     ; generate a path and check is the convoi can reach its destination. If not, generate a new env
     [
-      show "PASS 8"
       let start-path (plan-astar ([[patch-at 0 0 (pzcor * -1)] of patch-here] of one-of convois with [leader?]) (one-of patches with [objectif?]) false)
-      show "PASS 9"
       set as-path replace-item 0 as-path start-path
-      show "PASS 10"
       if not empty? start-path [ set path-is-possible? true]
     ]
   ]
-  show "PASS 11"
   if not debug and not debug-verbose [no-display]
-  show "PASS 12"
   setup-enemies
-  show "PASS 13"
   setup-drones
-  show "PASS 14"
   ;setup-citizens
 ;  setup-hq
 
   setup-precache
   display ; reenable gui display
   reset-ticks
-  show "PASS 15"
 end
 
 ; Initial parameters
@@ -67,10 +53,6 @@ to setup-globals
 
   set show-intentions false
   set show-messages false
-  
-  set play-sounds true
-  
-  set bullets-to-create []
 end
 
 
