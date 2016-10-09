@@ -48,6 +48,8 @@ to set-prox-target
     add-intention "chase-target" "chase-target? "
   ]
   
+  move-randomly
+  
 end
 
 to-report chase-target?
@@ -88,6 +90,46 @@ end
 
 to follow-target
   face-nowrap target ; On fait face a la cible
-  if [obstacle?] of patch-ahead speed [ stop ] ; BOF BOF
-  fd speed ; On avance vers elle
+  ifelse [obstacle?] of patch-ahead speed
+    [ find-path ]
+    [ fd speed ] ; On avance vers elle
 end
+
+;to-report obstacle-ahead?
+;  let turtle-heading heading
+;  face-nowrap target
+;  
+;  let dst 1
+;  let obs false
+;  while [ dst <= distance target and obs = false ]
+;  [
+;    set obs [ obstacle? ] of patch-ahead dst
+;    set dst dst + 1
+;  ]
+;  ; set back to initial heading
+;  set heading turtle-heading
+;  report obs
+;end
+
+to find-path
+  lt 20
+  if [ obstacle? ] of patch-ahead speed [ find-path ]
+  fd speed
+end
+
+;to find-path
+;  let p patch xcor ycor mapAlt
+;  let path (plan-astar p [patch-here] of target false)
+;  show p
+;  ;show path
+;end
+
+to move-randomly
+  ; move randomly if no ennemy near us
+  if random 100 < 50 [ lt 2 ]
+  if [ obstacle? ] of patch-ahead speed [ stop ]
+  fd speed
+end
+
+
+  
