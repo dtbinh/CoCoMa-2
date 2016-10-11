@@ -15,7 +15,7 @@ end
 to turtle-look
   ;Analyse de l'environement et mise a jour de croyance
 
-  let prox other turtles in-cone vision 360 
+  let prox other turtles in-cone vision 180 
 
   foreach  sort-on [who] prox [
     if [breed] of ? = enemies-ped or [breed] of ? = convois [

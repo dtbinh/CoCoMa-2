@@ -30,7 +30,7 @@ patches-own [obstacle? base? hangar? objectif? bridge? ; variables topologiques 
 
 
 to go
-
+  print (word "--------  " ticks "  --------")
   if debug [
     print (word "--------  " ticks "  --------")
   ]
@@ -262,7 +262,7 @@ simu-speed
 simu-speed
 0
 10
-1
+2
 .5
 1
 NIL
@@ -454,17 +454,17 @@ bullets-speed
 bullets-speed
 0.05
 1
-0.4
+1
 0.05
 1
 NIL
 HORIZONTAL
 
 INPUTBOX
-419
-393
-574
-453
+13
+764
+168
+824
 max-convois-life
 100
 1
@@ -492,6 +492,27 @@ play-sounds
 1
 1
 -1000
+
+TEXTBOX
+15
+733
+165
+751
+Convois\n
+11
+0.0
+1
+
+INPUTBOX
+194
+764
+349
+824
+convois-vision
+15
+1
+0
+Number
 
 @#$#@#$#@
 ## WHAT IS IT?

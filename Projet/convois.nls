@@ -4,6 +4,7 @@ convois-own [incoming-queue
   to-protect? ; Should this car be protected at all cost ?
   genlongpath? ; Should the leader compute a new path (but not shortest) ?
   dead?
+  vision
   speed maxdir ; maximal speed of a car, and max angle
   last-send-time ; communication historical time-stamp
   life ; Current health points
@@ -34,6 +35,7 @@ to setup-convois
       ; Init vars convois
       set speed 0.05 * simu-speed
       set maxdir 10 * simu-speed
+      set vision convois-vision
       set heading 0
       set roll 0
       set pitch 0
@@ -121,7 +123,8 @@ to convois-think
 
     ask convois [
       turtle-look ; On regarde autour
-      
+      convois-listen-messages
+      convois-send-beliefs
     ]
     
 
@@ -153,16 +156,15 @@ to convois-receive-inform [new-message]
 end
 
 to convois-send-beliefs
-  ifelse [leader?] of myself [
+  ifelse leader? [
     ; Si je suis un leader, je peux communiquer aux autres leader et aux drones
     
     
     
   ]
   [ ; Sinon, je ne parle qu'avec mon convoi
-    foreach sort [who] out-link-neighbors [
-      
-      
+    foreach sort-on [who] out-link-neighbors [
+      show ?
     ]
   ]
   
