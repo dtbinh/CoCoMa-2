@@ -197,6 +197,7 @@ end
 ;; The commented out line represents an alternative method.
 ;; Problem: What if the agent I am sending the message is "killed"
 ;; Solution: Nothing Happens. Could yield an error message Alternative: create a safe send.
+
 to send [msg]
   let recipients get-receivers msg
   let recv 0

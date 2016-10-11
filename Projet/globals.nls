@@ -15,19 +15,25 @@ end
 to turtle-look
   ;Analyse de l'environement et mise a jour de croyance
 
-  let prox other turtles in-radius-nowrap (vision)
+  let prox other turtles in-cone vision 360 
 
   foreach  sort-on [who] prox [
     if [breed] of ? = enemies-ped or [breed] of ? = convois [
-      let bel create-belief [side] of ? (list [who] of ? [xcor] of ? [ycor] of ?) ; ticks
+      let bel create-belief [side] of ? (list [who] of ? [xcor] of ? [ycor] of ? [zcor] of ? ticks) ; ticks
       maj-belief-turtle bel ; Mise a jour des croyance relative a cette turtle 
     ]
   ]
-  
   if debug [
    show beliefs
   ]
 end
+
+
+to send-beliefs [receiver]
+  
+end
+  
+ 
 
 to set-prox-target
   ; On recherche un ennemi dans la base de recherche

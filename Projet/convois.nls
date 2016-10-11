@@ -87,30 +87,11 @@ to setup-convois
 end
 
 
-
 ; Procedure principale de gestion des convois
 to convois-think
 
   if nb-cars > 0 [
-    ask convois with [dead?] [
-      let link-list []
-      ask my-links [
-        foreach sort-on [who] both-ends [
-          ;show [who] of ?
-          ;show word "myself" [who] of myself 
-          if not ([who] of ? = [who] of myself) [
-            set link-list lput [who] of ? link-list
-          ]
-        ]
-      ]
-      
-      if length link-list > 1 [ ask convoi item 0 sort-by > link-list [ create-convoi-link-to convoi item 1 sort-by > link-list ]]
-      ask my-links [die]
-      ;ask convoi item 0 link-list [ create-link-with convoi item 1 link-list ]
-      ;show item 0 link-list
-      ;show link-list
-    ]
-
+    
     ; 1 - Procedures automatiques : 
     ;    - Verification des morts
     ;    - Racords des links
@@ -137,10 +118,67 @@ to convois-think
     ; Echange des connaissance
     ; Regarder pour chaque convois si separation necessaire
     ; Separitions
+
+    ask convois [
+      turtle-look ; On regarde autour
+      
+    ]
     
 
-    let first-car min [who] of convois
+    calcul-astar
+    deplacement-leader-astar
+    deplacement-cortege
+    
+  ]
+end
 
+to convois-listen-messages
+  
+  let msg []
+  let performative []
+  
+  while [not empty? incoming-queue] [
+    set msg get-message
+    set performative get-performative msg
+    if performative = "inform" [convois-receive-inform msg]
+  ]
+  
+end
+
+to convois-receive-inform [new-message]
+  let new-beliefs get-content new-message
+  foreach new-beliefs [
+    maj-belief-turtle ?
+  ]
+end
+
+to convois-send-beliefs
+  ifelse [leader?] of myself [
+    ; Si je suis un leader, je peux communiquer aux autres leader et aux drones
+    
+    
+    
+  ]
+  [ ; Sinon, je ne parle qu'avec mon convoi
+    foreach sort [who] out-link-neighbors [
+      
+      
+    ]
+  ]
+  
+end
+
+to convoi-com
+  ; D'abord on ecoute
+  convois-listen-messages
+  ; Apres on parle
+  
+  
+  
+end
+
+to calcul-astar 
+  let first-car min [who] of convois
     ; Calcul du plan AStar pour chaque leader si necessaire
     foreach sort-on [who] turtle-set convois with [leader? and not finished? and not dead?] [
       let id ([who] of ?) - first-car
@@ -162,6 +200,11 @@ to convois-think
         ]
       ]
     ]
+end
+
+to deplacement-leader-astar
+  
+    let first-car min [who] of convois
 
     ; Deplacement des leaders sur le chemin AStar
     ask convois with [leader? and not finished? and not dead?] [ ; Tant qu'on n'a pas atteint le but
@@ -186,9 +229,10 @@ to convois-think
 
       ; Critere d'arret: on est a cote de l'objectif
       check-convoi-finished
-
     ]
+end
 
+to deplacement-cortege
     ; Deplacement des voitures-cortege: elles ne font que suivre la voiture devant eux (avec laquelle elles sont liées)
     ask convois with [not leader? and not finished? and not dead?] [
       ifelse any? my-out-convoi-links [
@@ -197,11 +241,11 @@ to convois-think
       ; S'il n'y a pas de lien devant, c'est probablement que la voiture est morte, donc on devient leader
       [
         set leader? true
-        set genlongpath? false
+        set genlongpath? true
         if not to-protect? [ set color orange ]
       ]
     ]
-  ]
+  
 end
 
 to-report detect-obstacle

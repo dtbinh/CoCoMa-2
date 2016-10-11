@@ -10,12 +10,14 @@ enemies-ped-own[
  side ; red (enemies) / blue (convoy)
  vision ; rayon de vision
  range
+ incoming-queue
 ]
 
 to setup-enemies-ped
   create-enemies-ped nb-enemies-ped [
     set beliefs []
     set intentions []
+    set incoming-queue []
     set life max-enemies-ped-life
     set dead? false
     set speed 0.05 * simu-speed * enemies-ped-speed-coef
