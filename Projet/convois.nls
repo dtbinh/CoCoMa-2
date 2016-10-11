@@ -92,23 +92,25 @@ end
 to convois-think
 
   if nb-cars > 0 [
-    ask convois [
-      ;one-of my-out-links
-      foreach sort-on [link-heading] my-links
-      [
-        show ?
+    ask convois with [dead?] [
+      let link-list []
+      ask my-links [
+        foreach sort-on [who] both-ends [
+          ;show [who] of ?
+          ;show word "myself" [who] of myself 
+          if not ([who] of ? = [who] of myself) [
+            set link-list lput [who] of ? link-list
+          ]
+        ]
       ]
-      ;ask in-link-neighbors
-      ;ask my-links [
-        
-      ;]
-;      if dead? [
-;        show "dead"
-;        ;show links
-;        ;show my-links
-;      ]
+      
+      if length link-list > 1 [ ask convoi item 0 sort-by > link-list [ create-convoi-link-to convoi item 1 sort-by > link-list ]]
+      ask my-links [die]
+      ;ask convoi item 0 link-list [ create-link-with convoi item 1 link-list ]
+      ;show item 0 link-list
+      ;show link-list
     ]
-    
+
     ; 1 - Procedures automatiques : 
     ;    - Verification des morts
     ;    - Racords des links
@@ -195,7 +197,7 @@ to convois-think
       ; S'il n'y a pas de lien devant, c'est probablement que la voiture est morte, donc on devient leader
       [
         set leader? true
-        set genlongpath? true
+        set genlongpath? false
         if not to-protect? [ set color orange ]
       ]
     ]
