@@ -22,6 +22,9 @@ globals [mapAlt solAlt basseAlt hauteAlt ; variables topologiques Z discretise: 
   is-movie-recording?
   show-intentions
   show-messages
+
+  convois-list ; Liste des convois constament mise a jour. Format [ [id leader, id 2, id 3 ...] [id leader 2 , ... ]... ]
+
   ]
 
 patches-own [obstacle? base? hangar? objectif? bridge? ; variables topologiques au niveau mapAlt, permet de definir les patchs praticables et ceux qui sont des obstacles
