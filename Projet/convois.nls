@@ -134,7 +134,7 @@ to convois-think
     ask convois [
       turtle-look ; On regarde autour
       convois-com
-      show beliefs 
+     
     ]
     
 
@@ -184,7 +184,7 @@ to convois-send-beliefs
   if leader? [
     set receivers sentence receivers sort-on [who] turtles with [ (breed = convois and leader?) or (breed = drones)] 
   ]
-  send add-multiple-receivers receivers add-content beliefs create-message "inform"
+  ;send add-multiple-receivers receivers add-content beliefs create-message "inform"
   
 end
 
