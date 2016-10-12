@@ -33,7 +33,7 @@ patches-own [obstacle? base? hangar? objectif? bridge? ; variables topologiques 
 
 
 to go
-  print (word "--------  " ticks "  --------")
+  ;print (word "--------  " ticks "  --------")
   if debug [
     print (word "--------  " ticks "  --------")
   ]
@@ -356,7 +356,7 @@ INPUTBOX
 457
 540
 enemies-ped-speed-coef
-0.7
+0.3
 1
 0
 Number

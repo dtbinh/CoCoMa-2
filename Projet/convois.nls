@@ -133,8 +133,8 @@ to convois-think
 
     ask convois [
       turtle-look ; On regarde autour
-      convois-listen-messages
-      convois-send-beliefs
+      convois-com
+      show get-my-convoi [] 0
     ]
     
 
@@ -144,6 +144,18 @@ to convois-think
     
   ]
 end
+
+to-report get-my-convoi [team] ; Renvoi le convoi auquel apartient l'appelant. Doit etre appeler avec une liste vide. Retourne une liste d'id
+  if not member? who team [
+    set team lput who team
+  ]
+  let neightbors (turtle-set out-link-neighbors in-link-neighbors)
+  ask neightbors with [ not member? who team] [
+   set team remove-duplicates sentence team get-my-convoi team
+  ]
+  report team
+end
+  
 
 to convois-listen-messages
   
@@ -174,13 +186,13 @@ to convois-send-beliefs
   ]
   [ ; Sinon, je ne parle qu'avec mon convoi
     foreach sort-on [who] out-link-neighbors [
-      show ?
+      ;show ?
     ]
   ]
   
 end
 
-to convoi-com
+to convois-com
   ; D'abord on ecoute
   convois-listen-messages
   ; Apres on parle
