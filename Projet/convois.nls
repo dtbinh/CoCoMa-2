@@ -93,6 +93,16 @@ end
 to convois-think
 
   if nb-cars > 0 [
+    ask convois with [dead?] [
+      ; show who
+      let out sort-on [who] out-link-neighbors
+      let in sort-on [who] in-link-neighbors
+      
+      if not (out = []) and not (in = []) [
+        ask item 0 in [ create-convoi-link-to item 0 out ]
+      ]
+      ask my-links [die]
+    ]
     
     ; 1 - Procedures automatiques : 
     ;    - Verification des morts
