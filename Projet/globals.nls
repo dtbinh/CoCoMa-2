@@ -1,21 +1,31 @@
 to maj-belief-turtle [bel]
   ; Mise a jour des informations relatives a une turtle, sert a eviter le cumul d'information et les doublons
-  let old beliefs-of-type belief-type bel
-  foreach old [
-    if first item 1 ? = first item 1 bel [ 
+  let more-recent-found? false
+  foreach beliefs [
+    if (first bel = first ?) and (first item 1 ? = first item 1 bel) [ 
       ; Si on trouve un ancien belief avec le meme id que le nouveau
-      ; ici on pourra mettre une conditionelle temporel
-      remove-belief ? ; on le supprime pour ne garder que le plus recent
-      stop
+      ifelse  item 4 item 1 ? > item 4 item 1 bel [ ; Si le beliefs trouve est plus recent
+        set more-recent-found? true
+        stop
+      ]
+      [
+        ;show word 
+        remove-belief ?
+        stop
+      ]
     ]
   ]
-  add-belief bel ; On ajoute alors les nouvelles informations
+  if not more-recent-found? [ ; Si on a pas trouve de belief plus recent
+    add-belief bel ; On ajoute alors les nouvelles informations
+  ]
+  ;show more-recent-found?
+  
 end
 
 to turtle-look
   ;Analyse de l'environement et mise a jour de croyance
 
-  let prox other turtles in-cone vision 180 
+  let prox other turtles in-cone-nowrap vision 180 
 
   foreach  sort-on [who] prox [
     if [breed] of ? = enemies-ped or [breed] of ? = convois [
@@ -81,7 +91,7 @@ end
 
 to shoot-target
   if ticks - last-shot > 15 / simu-speed  [ ; Attention : la cadence de tir ne devrais pas etre defini ici
-    sound:play-note "GUNSHOT" 128 64 0.2
+    if play-sounds [sound:play-note "GUNSHOT" 128 64 0.2]
     set last-shot ticks
     hatch-bullets 1 [ 
       if [breed] of myself = drones [ set damage 15 ]

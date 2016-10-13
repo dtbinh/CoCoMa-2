@@ -131,10 +131,15 @@ to convois-think
     ; Regarder pour chaque convois si separation necessaire
     ; Separitions
 
+    show "-------------"
     ask convois [
       turtle-look ; On regarde autour
+      
+     ; show "-------------"
+      show length beliefs
+      show beliefs
       convois-com
-     
+     ; show "-------------"
     ]
     
 
@@ -158,14 +163,13 @@ end
   
 
 to convois-listen-messages
-  
   let msg []
   let performative []
-  
   while [not empty? incoming-queue] [
     set msg get-message
     set performative get-performative msg
-    if performative = "inform" [convois-receive-inform msg]
+    if performative = "inform" [ convois-receive-inform msg ]
+    
   ]
   
 end
@@ -173,18 +177,22 @@ end
 to convois-receive-inform [new-message]
   let new-beliefs get-content new-message
   foreach new-beliefs [
+    ;show ?
     maj-belief-turtle ?
   ]
 end
 
 to convois-send-beliefs
   ; J'envoi mes beliefs a mon convois
-  let receivers get-my-convoi []
+  let receivers remove who get-my-convoi []
   ; Si je suis leader, je les envois aussi au drone et aux autres leaders
   if leader? [
-    set receivers sentence receivers sort-on [who] turtles with [ (breed = convois and leader?) or (breed = drones)] 
+    set receivers sentence receivers [who] of ( turtles with [ ((breed = convois and leader?) or (breed = drones) ) and (who != [who] of myself) ] )
   ]
-  ;send add-multiple-receivers receivers add-content beliefs create-message "inform"
+  
+  let msg add-multiple-receivers receivers add-content beliefs create-message "inform"
+  ;show msg
+  send msg
   
 end
 
@@ -194,6 +202,17 @@ to convois-com
   ; Apres on parle
   convois-send-beliefs
 end
+
+
+;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+;
+;                                                                    CODE FOURNI
+;
+;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+
 
 to calcul-astar 
   let first-car min [who] of convois
