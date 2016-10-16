@@ -410,7 +410,7 @@ INPUTBOX
 128
 720
 nb-drones
-0
+5
 1
 0
 Number
@@ -420,7 +420,7 @@ INPUTBOX
 660
 282
 720
-max-drone-fuel
+max-drones-fuel
 100
 1
 0
@@ -431,7 +431,7 @@ INPUTBOX
 660
 450
 720
-drone-vision
+drones-vision
 70
 1
 0

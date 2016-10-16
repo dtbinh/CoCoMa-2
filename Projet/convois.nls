@@ -131,13 +131,13 @@ to convois-think
     ; Regarder pour chaque convois si separation necessaire
     ; Separitions
 
-    show "-------------"
+    ;show "-------------"
     ask convois [
       turtle-look ; On regarde autour
       
      ; show "-------------"
-      show length beliefs
-      show beliefs
+      ;show length beliefs
+      ;show beliefs
       convois-com
      ; show "-------------"
     ]

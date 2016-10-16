@@ -6,32 +6,58 @@ drones-own[
  protect ; convoy
  target ; enemy
  speed ; maxdir
+ vision
+ side
 ]
 
 to setup-drones
-  create-drones nb-drones [
-    set beliefs []
-    set intentions []
-    set fuel max-drone-fuel
-    set dead? false
-    set protect nobody
-    set target nobody
-    set speed 0.05 * simu-speed 
-    set shape "airplane"
-    set color white
-
-    setxyz random-xcor random-ycor solAlt
-    while [(pcolor < 50)  or ( pcolor > 70 )]  [
-     setxyz random-xcor random-ycor solAlt
+  if nb-drones > 0 [
+    let base-min-pxcor min [pxcor] of (patches with [base? and pzcor = mapAlt])
+    ;let base-max-pxcor max [pxcor] of (patches with [base? and pzcor = mapAlt])
+    let base-min-pycor min [pycor] of (patches with [base? and pzcor = mapAlt])
+    let base-max-pycor max [pycor] of (patches with [base? and pzcor = mapAlt])
+    
+    create-drones nb-drones
+    ask drones [
+      set beliefs []
+      set intentions []
+      set fuel max-drones-fuel
+      set dead? false
+      set protect nobody
+      set target nobody
+      set speed 0.05 * simu-speed * enemies-ped-speed-coef
+      set vision drones-vision
+      set side "blue"
+      set shape "airplane"
+      set color white
+      set heading 0
+    ]
+    
+    let first-drone min [who] of drones
+    
+    ask drone first-drone [
+      ifelse (who - 1) mod 2 = 0
+      [ move-to patch (base-min-pxcor + 1) base-max-pycor solAlt ]
+      [ move-to patch base-min-pxcor base-max-pycor solAlt ]
+    ]
+    
+    if nb-drones > 1 [
+      ask turtle-set sort-on [who] drones with [who > first-drone] [
+        let rangee (base-max-pycor - base-min-pycor + 1) / (nb-drones / 2)
+        ifelse (who - 1) mod 2 = 0 [ set xcor base-min-pxcor + 1 ] [ set xcor base-min-pxcor ] ; a gauche ou a droite selon le nombre (pair ou impair respectivement)
+        set ycor base-max-pycor - (floor ((who - first-drone) / 2) * rangee); d'une rangee de plus en plus basse toutes les deux voitures
+        set zcor solAlt
+      ]
     ]
   ]
+  
 end
 
 to drones-think
 ;  Boucle principale des drones
   ask drones [
 ;    Premiere chose, on regarde autour
-    drones-look
+    turtle-look
 ;    Ensuite on met a jour les intentions
     drones-manage-intentions
 ;    Enfin on execute les intentions
@@ -39,51 +65,30 @@ to drones-think
    ]
 end
 
-to drones-look
-;  Analyse de l'environement et mise a jour de croyance
-
-  let proximate other turtles in-radius-nowrap (drone-vision)
-  foreach sort-on [who] proximate [
-    ; si ? est un ennemies a pied
-    if [breed] of ? = enemies-ped [
-       let b create-belief (word "enemy " ([who] of ?)) list [xcor] of ? [ycor] of ?
-       remove-beliefs-of-type belief-type b ; On efface les anciennes informations relative à sa position
-       add-belief b ; On l'ajoute à la liste
-    ]
-    ; si ? est une voiture
-    if [breed] of ? = convois [ ;
-       let b create-belief (word "protect " ([who] of ?)) list [xcor] of ? [ycor] of ? 
-       remove-beliefs-of-type belief-type b
-       add-belief b
-    ]
-  ]
-  if debug [ show beliefs ]
-end
-
 to set-protect
-  if protect != nobody [ stop ]
+  if protect = nobody [
   
-  foreach beliefs [ 
-    if substring first ? 0 7 = "protect" [
-      let tmp turtle read-from-string substring first ? 8 9
-      if protect = nobody [
-        set protect tmp
+    foreach beliefs [ 
+      if first ? = side [ 
+        let tmp turtle first item 1 ?
+        if [breed] of tmp = convois [
+          set protect tmp
+        ]
+      ;show [breed] of tmp
+      ;set protect convoi first item 1 ? 
       ]
-    ]
-    if substring first ? 0 5 = "enemy" [
-      let tmp turtle read-from-string substring first ? 6 7
-      set target tmp
     ]
   ]
   
   if protect != nobody [
     add-intention "follow-protect" "follow-protect?"
   ]
-;    if target != nobody [ add-intention "shoot-enemy" "shoot-enemy" ]
+
 end
 
+; intention to follow a convoy to protect
 to-report follow-protect?
-  let tmp distance-nowrap protect < drone-vision
+  let tmp distance-nowrap protect < drones-vision
   if not tmp [ set protect nobody ]
   report tmp
 end
@@ -91,19 +96,7 @@ end
 to follow-protect
   face-nowrap protect
   fd speed
-  show speed
-  show intentions
 end
-
-;to-report shoot-enemy?
-;  let tmp distance-nowrap target < drone-fire-range
-;  if not tmp [ set target nobody ]
-;  report tmp
-;end
-;
-;to shoot-enemy
-;  
-;end
 
 to drones-manage-intentions
   set-protect
@@ -112,3 +105,13 @@ end
 to drones-execute-intentions
   execute-intentions
 end
+
+;;; Max drones / convoy (more drones on convoy that has the critical car)
+;;; Leader ?
+;;; Hover over convoy
+;;; Shoot enemies
+;;; Go to base to refuel
+;;; Prioritize the critical car if it's being shot on
+;;;
+
+

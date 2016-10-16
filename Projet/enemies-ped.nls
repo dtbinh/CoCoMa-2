@@ -29,6 +29,7 @@ to setup-enemies-ped
     set side "red"
     set vision enemies-ped-vision
     set range enemies-ped-fire-range
+    set label who
 
     setxyz random-xcor random-ycor solAlt
     while [true] [
