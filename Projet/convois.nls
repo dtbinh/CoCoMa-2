@@ -13,6 +13,7 @@ convois-own [incoming-queue
   intentions
   hit?
   lost-leader? ; Did our leader die ?
+  need-new-path?
   ]
 
 to setup-convois
@@ -52,6 +53,7 @@ to setup-convois
       set intentions []
       set hit? false
       set lost-leader? false
+      set need-new-path? false
       ; Visu
       set label who ; display the car names
     ]
@@ -96,7 +98,7 @@ end
 ;;; Procedure principale de gestion des convois
 to convois-think
 
-  let dead-leader false
+  
   if nb-cars > 0 [
     ask convois with [dead?] [
       let out sort-on [who] out-link-neighbors
@@ -108,34 +110,6 @@ to convois-think
       ask my-links [die]
     ]
     
-    ; 1 - Procedures automatiques : 
-    ;    - Verification des morts
-    ;    - Racords des links
-    ;    - Reatribution automatique du poste de leader 
-    ;
-    ; 2 - Observation et management des connaissances : 
-    ;     - Observation des alentours
-    ;     - Tri des informations
-    ;     - Envois des informations aux allies
-    ;     - Reception des connaissances allies
-    ;     - Nouveaux tri des informations
-    ;
-    ; 3 - Planification par ordre de priorite : 
-    ;    - Si leader mort au dernier tour : 
-    ;      - Le leader par iterim evalue la necessite de reelection ( celle-ci devra par exemple attendre si le convois est sous le feu ennemi )
-    ;      - Si necessaire, il engage la procedure de reelection 
-    ; 
-    ;   - Evaluation de la necessite de separtion : 
-    ;      - Le leader du convois decide ou pas d'engager une separation du convoi ( si par exemple celui-ci est attaque, si un drone repere des ennemies sur la route etc )
-    ;      - Si separation necessaire, il engage le procedure et dirige l'election
-    ;      - 
-    
-    ; Look et maj BDI
-    ; Echange des connaissance
-    ; Regarder pour chaque convois si separation necessaire
-    ; Separitions
-
-    show "-------------"
 
     ask convois with [ not dead? ] [
       check-if-hit ; On regarde si on s'est fait tirer dessus
@@ -146,7 +120,6 @@ to convois-think
       if leader? [ ; Si je suis leader
        convois-leader-responsibilities ; Je fait des trucs de leader
       ]
-      ; show leader?
       convois-com-orders ; On ecoute si on a reçu des ordres
       execute-intentions ; J'ai probablement un truc à faire, donc je le fait
     ]
@@ -236,14 +209,14 @@ end
 to convois-leader-responsibilities
   ;if (nb-separations > 0 ) [ stop ]
   foreach beliefs [ ; Si quelqu'un s'es fait tirer dessus : DISPERTION !
+     if first ? = "hit" and nb-separations < 1 [
+      separate
+      set nb-separations ( nb-separations + 1 ) ; mais juste une fois
+      stop
+    ]
     if first ? = "leader died" and nb-elections < 1 [
       elect-new-leader
       set nb-elections ( nb-elections + 1 )
-    ]
-      
-    if first ? = "hit" and nb-separations < 1 [
-      separate
-      set nb-separations ( nb-separations + 1 ) ; mais juste une fois
       stop
     ] 
   ]
@@ -279,12 +252,26 @@ to get-best-leader-and-separate
   if best = nobody [ stop ]
   show (word "And The Chosen One Is ............ " best "  !!!!!")
   send add-content (list "separate") add-receiver best create-message "accept-proposal"
+  
+  
+  ifelse convois-protect? [ ; Si je n'ai pas le convois important, je prend mon temps
+    set genlongpath? false
+    set need-new-path? true
+    show "LONG PATH FALSE"
+  ]
+  [
+    set genlongpath? true
+    set need-new-path? true
+    show "LONG PATH TRUE"
+  ]
+ 
 end
 
 to elect-new-leader
   add-intention "get-best-leader" "true"
   add-intention "wait-and-see" timeout_expired 3
   add-intention "send-cfp-elect-leader" "true"
+ 
 end
 
 ;;; Choisir meilleur leader
@@ -294,7 +281,7 @@ to get-best-leader
   if best = nobody [ stop ] ; best = who
   show (word "New leader because old one's dead ............ " best "  !!!!!")
   send add-content (list "lead") add-receiver best create-message "accept-proposal"
-  set best convoi read-from-string best
+  
 end
 
 ;;; Choisir meilleure réponse
@@ -310,7 +297,6 @@ to-report get-best-propose [cfp-type]
    ]
   ]
   report best
-  ;report 4
 end
 
 ;@@@@@@@@@@@@@@@@@@@@
@@ -321,7 +307,7 @@ to convois-com-orders
   foreach get-message-filter "cfp" "separate" [ convois-receive-cfp ? ] ; Je reçois mes cfp
   foreach get-message-filter "cfp" "elect-leader" [ convois-receive-cfp ? ]
   foreach get-message-filter "accept-proposal" "separate" [ convois-accept-lead-and-separate ] ; Je reçois mes accept-proposal
-  foreach get-message-filter "accept-proposal" "lead" [ convois-accept-lead ] ; Je reçois mes accept-proposal
+  foreach get-message-filter "accept-proposal" "lead" [ convois-accept-lead (get-sender-turtle ?)] ; Je reçois mes accept-proposal
 end
 
 ;;; Recevoir un CFP
@@ -352,23 +338,40 @@ to convois-accept-lead-and-separate
   set leader? true ; Je deviens leader
   set color orange
   ask my-out-links [ die ] ;
-  let convois-protect false
-  foreach get-my-convoi [] [
-    if [to-protect?] of turtle ? [ ; Si voiture à protéger
-      set convois-protect true
-      stop
-    ]
+  
+  ifelse convois-protect? [ ; Si je n'ai pas le convois important, je prend mon temps
+    set genlongpath? false
+    set need-new-path? true
+    show "LONG PATH FALSE"
   ]
-  if not convois-protect [ ; Si je n'ai pas le convois important, je prend mon temps
+  [
     set genlongpath? true
+    set need-new-path? true
+    show "LONG PATH TRUE"
   ]
 end
 
-to convois-accept-lead
+to-report convois-protect?
+  let convois-protect false
+  foreach get-my-convoi [] [
+    if [to-protect?] of turtle ? [ ; Si voiture à protéger
+      report true
+    ]
+  ]
+  report false
+end
+
+to convois-accept-lead [old-leader]
   ; Je viens d'etre choisi nouveau leader
   show "I'm in charge now !"
   set leader? true ; Je deviens leader
   set color orange
+  
+  ask old-leader [
+    set leader? false
+    set color magenta
+  ]
+  
     
   ; set first car
   let first-car-bool false
@@ -416,7 +419,7 @@ to calcul-astar
       let id ([who] of ?) - first-car
       ; Recalcule le chemin si nécessaire (par exemple au début de la simulation ou quand le convoi se sépare)
       ; Note: on est oblige de le faire en dehors du ask sinon on ne peut pas acceder a tous les patchs
-      if empty? as-path or length as-path < (id + 1) or empty? (item id as-path) [ ; s'il n'y a pas encore de chemin du tout, ou pas de chemin pour cette voiture, on cree un plan AStar
+      if empty? as-path or length as-path < (id + 1) or empty? (item id as-path) or [need-new-path?] of ? [ ; s'il n'y a pas encore de chemin du tout, ou pas de chemin pour cette voiture, on cree un plan AStar
         ; Cree le plan AStar (attention a ca que le patch start soit au niveau ou il y a les obstacles, ici pzcor = mapAlt pour les obstacles)
         let start-patch min-one-of (patches with [pzcor = mapAlt and not obstacle?]) [distance ?] ; on s'assure de choisir comme patch de depart un patch libre sans obstacle, sinon quand on split un convoi il se peut qu'il soit sur un obstacle et qu'il ne puisse jamais generer de chemin
         let new-path plan-astar ([patch-at 0 0 (pzcor * -1)] of start-patch) (one-of patches with [objectif?]) ([genlongpath?] of ?)

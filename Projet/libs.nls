@@ -277,6 +277,12 @@ to-report get-sender [msg]
   ;;report item ((position "sender:" msg) + 1) msg
 end
 
+to-report get-sender-turtle [msg]
+  let id remove "sender:" first (filter [not is-number? ? and member? "sender:" ?] msg)
+  report turtle read-from-string id
+  ;;report item ((position "sender:" msg) + 1) msg
+end
+
 ;; Reports (returns) the content of a message
 to-report get-content [msg]
   report item (position "content:" msg + 1) msg
@@ -286,6 +292,7 @@ end
 to-report get-receivers [msg]
   report map [remove "receiver:" ?] filter [not is-number? ? and member? "receiver:" ?] msg
 end
+
 
 ;; reports the message performative.
 to-report get-performative [msg]

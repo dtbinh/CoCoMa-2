@@ -65,9 +65,8 @@ to set-prox-target
      
     if first ? != side [ ; Pour tout les ennemies recenser
       let tmp turtle first item 1 ? 
- 
-      if tmp != nobody and not [dead?] of tmp and (target = nobody or distance tmp < distance target) [ ; On recherche le plus proche [ NOTE : Attention à la WARP-ZONE ! ]
-        set target tmp 
+        if tmp != nobody and not [dead?] of tmp and (target = nobody or distance tmp < distance target) [ ; On recherche le plus proche [ NOTE : Attention à la WARP-ZONE ! ]
+          set target tmp 
       ]
     ]
   ]
