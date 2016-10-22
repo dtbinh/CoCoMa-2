@@ -17,6 +17,7 @@ to update-bullets
           if life <= 0 [ 
             set dead? true
           ]
+          set hit? true
         ]
         die
       ]

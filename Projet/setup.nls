@@ -23,7 +23,7 @@ to setup
   ]
   if not debug and not debug-verbose [no-display]
   setup-enemies
-  ;setup-drones
+  setup-drones
   ;setup-citizens
 ;  setup-hq
 
@@ -53,6 +53,9 @@ to setup-globals
 
   set show-intentions false
   set show-messages false
+  
+  set nb-separations 0
+  set nb-elections 0
 end
 
 
@@ -72,7 +75,17 @@ to setup-env
   ask patches with [pzcor = mapAlt][set pcolor green + (random-float 2) - 1]
 
   ; Montagnes
-
+  
+  repeat nb-mountains [
+    ask one-of patches with [ pcolor > 50 and pcolor < 70 and not obstacle? and not base? and not hangar?] [
+      set pcolor brown - 2
+      set obstacle? true
+      ask patches in-radius-nowrap 6 with [ not base?][
+        set pcolor brown - pzcor / 2
+        set obstacle? true
+      ]
+    ] 
+  ] 
 
   ; Rivieres
   if nb-rivers > 0 [

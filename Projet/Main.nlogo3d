@@ -23,7 +23,8 @@ globals [mapAlt solAlt basseAlt hauteAlt ; variables topologiques Z discretise: 
   show-intentions
   show-messages
 
-  convois-list ; Liste des convois constament mise a jour. Format [ [id leader, id 2, id 3 ...] [id leader 2 , ... ]... ]
+  nb-separations
+  nb-elections
 
   ]
 
@@ -163,7 +164,7 @@ INPUTBOX
 176
 114
 nb-mountains
-3
+2
 1
 0
 Number
@@ -265,7 +266,7 @@ simu-speed
 simu-speed
 0
 10
-2
+6.5
 .5
 1
 NIL
@@ -410,7 +411,7 @@ INPUTBOX
 128
 720
 nb-drones
-5
+0
 1
 0
 Number

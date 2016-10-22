@@ -11,6 +11,7 @@ enemies-ped-own[
  vision ; rayon de vision
  range
  incoming-queue
+ hit?
 ]
 
 to setup-enemies-ped
@@ -30,6 +31,7 @@ to setup-enemies-ped
     set vision enemies-ped-vision
     set range enemies-ped-fire-range
     set label who
+    set hit? false
 
     setxyz random-xcor random-ycor solAlt
     while [true] [
@@ -61,18 +63,18 @@ to enemies-ped-think
    ]
 end
 
+to enemies-ped-manage-intentions
+  set-prox-target
+  if target = nobody [
+    set-explore-target
+  ]   
+end
+
 to set-explore-target
   set explore-target patch random-xcor random-ycor mapAlt
  ; add-intention "explore" "explore?"
 end
 
-to enemies-ped-manage-intentions
-  set-prox-target
-  if target = nobody [
-    set-explore-target
-  ]
-    
-end
 
 to enemies-ped-execute-intentions
   execute-intentions

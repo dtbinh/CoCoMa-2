@@ -228,6 +228,20 @@ to-report get-message-no-remove
   report first incoming-queue
 end
 
+to-report get-message-filter [performative description] 
+  
+  let messages []
+  
+  foreach incoming-queue [
+   if ( get-performative ?  = performative and  ( first get-content ? = description) ) [
+     set messages lput ? messages
+     set incoming-queue remove ? incoming-queue
+    ]
+  ]
+  
+  report messages
+end
+
 ;; Explicit remove-msg.
 ;; This is needed since reporters *cannot* change a variable's values (apparently).
 to remove-msg

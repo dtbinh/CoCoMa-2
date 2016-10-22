@@ -1,4 +1,5 @@
 drones-own[
+ incoming-queue
  beliefs
  intentions
  fuel
@@ -8,12 +9,12 @@ drones-own[
  speed ; maxdir
  vision
  side
+ hit?
 ]
 
 to setup-drones
   if nb-drones > 0 [
     let base-min-pxcor min [pxcor] of (patches with [base? and pzcor = mapAlt])
-    ;let base-max-pxcor max [pxcor] of (patches with [base? and pzcor = mapAlt])
     let base-min-pycor min [pycor] of (patches with [base? and pzcor = mapAlt])
     let base-max-pycor max [pycor] of (patches with [base? and pzcor = mapAlt])
     
@@ -21,6 +22,7 @@ to setup-drones
     ask drones [
       set beliefs []
       set intentions []
+      set incoming-queue []
       set fuel max-drones-fuel
       set dead? false
       set protect nobody
@@ -31,6 +33,7 @@ to setup-drones
       set shape "airplane"
       set color white
       set heading 0
+      set hit? false
     ]
     
     let first-drone min [who] of drones
@@ -67,12 +70,13 @@ end
 
 to set-protect
   if protect = nobody [
-  
+    if who = 28 [ show protect ]
     foreach beliefs [ 
       if first ? = side [ 
         let tmp turtle first item 1 ?
         if [breed] of tmp = convois [
           set protect tmp
+          add-intention "follow-protect" "follow-protect?"
         ]
       ;show [breed] of tmp
       ;set protect convoi first item 1 ? 
@@ -80,9 +84,7 @@ to set-protect
     ]
   ]
   
-  if protect != nobody [
-    add-intention "follow-protect" "follow-protect?"
-  ]
+
 
 end
 
@@ -90,7 +92,7 @@ end
 to-report follow-protect?
   let tmp distance-nowrap protect < drones-vision
   if not tmp [ set protect nobody ]
-  report tmp
+  report not tmp
 end
 
 to follow-protect

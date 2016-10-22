@@ -1,0 +1,102 @@
+\documentclass[11pt, letterpaper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[frenchb]{babel}
+\usepackage[top=3cm, bottom=3cm, left=2cm, right=2cm]{geometry}
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+
+\newcommand{\hmark}{\rule{\linewidth}{0.5mm}}
+
+\begin{document}
+
+\pagestyle{fancy}
+\renewcommand{\headrulewidth}{1pt}
+\rhead{}
+\lhead{\textbf{Coordination et Consensus Multiagents}}
+
+\begin{titlepage}
+\pagenumbering{gobble}
+
+\centering
+
+\begin{figure}[t]
+\begin{center}
+\includegraphics[width=8cm]{upmc.png}
+\end{center}
+\end{figure}
+
+\hmark \\[0.5cm]
+\textsc{\textbf{\Large Coordination et Consensus Multiagents}} \\[0.5cm]
+\textsc{CoCoMa} \\[0.5cm]
+\hmark \\[5cm]
+
+\begin{minipage}{0.4\textwidth}
+\begin{flushleft}
+Laura \textsc{Greige}\\
+Pablo \textsc{Petit}
+\end{flushleft}
+\end{minipage}
+~
+\begin{minipage}{0.4\textwidth}
+\begin{flushright} \large
+\emph{Enseignants :}\\
+Aurélie \textsc{Beynier}\\
+Cédric \textsc{Herpson}\\
+Nicolas \textsc{Maudet}
+\end{flushright}
+\end{minipage}\\[4cm]
+
+\large 2016
+
+\end{titlepage}
+
+\newpage
+
+\tableofcontents
+
+\newpage
+
+\pagenumbering{arabic}
+
+\section*{Introduction}
+\addcontentsline{toc}{section}{Introduction}
+
+\section{Environnement}
+
+\section{Ennemis terrestres}
+
+\section{Convois}
+
+Evitement d'obstacles, màj du leader etc., séparation
+
+\subsection{Comportement}
+
+1 - Procedures automatiques : Verification des morts, Racords des links, Reatribution automatique du poste de leader \\
+
+2 - Observation et management des connaissances : Observation des alentours, Tri des informations, Envois des informations aux allies, Reception des connaissances allies, Nouveaux tri des informations\\
+
+3 - Planification par ordre de priorite : \\
+- Si leader mort au dernier tour : Le leader par iterim evalue la necessite de reelection ( celle-ci devra par exemple attendre si le convois est sous le feu ennemi ), Si necessaire, il engage la procedure de reelection\\
+- Evaluation de la necessite de separtion : Le leader du convois decide ou pas d'engager une separation du convoi ( si par exemple celui-ci est attaque, si un drone repere des ennemies sur la route etc ), Si separation necessaire, il engage le procedure et dirige l'election.
+
+\subsection{Communications}
+
+\subsubsection{Partage d'informations : Beliefs}
+
+\subsubsection{Eléction de leader}
+
+\section{Drones}
+
+\subsection{Comportement}
+
+Munitions et carburant, rayon de communications, exploration, protection, destruction et coordination etc.
+
+\subsection{Communications}
+
+\subsection{Stratégie}
+
+\section*{Conclusion}
+\addcontentsline{toc}{section}{Conclusion}
+
+\end{document}

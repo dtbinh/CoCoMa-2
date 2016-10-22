@@ -11,6 +11,8 @@ convois-own [incoming-queue
   side ; red or blue
   beliefs 
   intentions
+  hit?
+  lost-leader? ; Did our leader die ?
   ]
 
 to setup-convois
@@ -48,6 +50,8 @@ to setup-convois
       set side "blue"
       set beliefs []
       set intentions []
+      set hit? false
+      set lost-leader? false
       ; Visu
       set label who ; display the car names
     ]
@@ -83,18 +87,18 @@ to setup-convois
         set ycor base-max-pycor - (floor (who / 2) / (nb-cars / 2) * (base-max-pycor - base-min-pycor)) ; d'une rangee de plus en plus basse toutes les deux voitures
         set zcor solAlt
       ]
-
     ]
+    
   ]
 end
 
 
-; Procedure principale de gestion des convois
+;;; Procedure principale de gestion des convois
 to convois-think
 
+  let dead-leader false
   if nb-cars > 0 [
     ask convois with [dead?] [
-      ; show who
       let out sort-on [who] out-link-neighbors
       let in sort-on [who] in-link-neighbors
       
@@ -131,57 +135,73 @@ to convois-think
     ; Regarder pour chaque convois si separation necessaire
     ; Separitions
 
-    ;show "-------------"
-    ask convois [
+    show "-------------"
+
+    ask convois with [ not dead? ] [
+      check-if-hit ; On regarde si on s'est fait tirer dessus
+      check-if-leader-died ; On regarde si notre leader est mort
       turtle-look ; On regarde autour
+      convois-com-info ; On lit les message d'observation
       
-     ; show "-------------"
-      ;show length beliefs
-      ;show beliefs
-      convois-com
-     ; show "-------------"
+      if leader? [ ; Si je suis leader
+       convois-leader-responsibilities ; Je fait des trucs de leader
+      ]
+      ; show leader?
+      convois-com-orders ; On ecoute si on a reçu des ordres
+      execute-intentions ; J'ai probablement un truc à faire, donc je le fait
     ]
     
-
     calcul-astar
     deplacement-leader-astar
     deplacement-cortege
     
   ]
 end
-; Renvoi le convoi auquel apartient l'appelant. Doit etre appeler avec une liste vide. Retourne une liste d'id
-to-report get-my-convoi [team] 
-  if not member? who team [
-    set team lput who team
-  ]
-  let neightbors (turtle-set out-link-neighbors in-link-neighbors)
-  ask neightbors with [ not member? who team] [
-   set team remove-duplicates sentence team get-my-convoi team
-  ]
-  report team
-end
-  
 
-to convois-listen-messages
-  let msg []
-  let performative []
-  while [not empty? incoming-queue] [
-    set msg get-message
-    set performative get-performative msg
-    if performative = "inform" [ convois-receive-inform msg ]
-    
+;;; Si on s'est fait attaquer, ajouter un belief 'hit'
+to check-if-hit 
+  if hit? [
+   set hit? false
+   maj-belief-turtle create-belief "hit" ( list who ticks )
   ]
-  
 end
 
+;;; Si notre leader est mort, ajouter un belief 'leader died'
+to check-if-leader-died
+  if lost-leader? [
+    show "dead leader"
+    set lost-leader? false
+    maj-belief-turtle create-belief "leader died" ( list who ticks )
+  ]
+end
+
+;@@@@@@@@@@@@@@@@@@@@
+;    COMMUNICATIONS
+;@@@@@@@@@@@@@@@@@@@@
+
+;;; Communications convois
+to convois-com-info
+  ; D'abord on ecoute
+  convois-listen-inform-messages
+  ; Apres on parle
+  convois-send-beliefs
+end
+
+;;; Filtrer les messages reçus
+to convois-listen-inform-messages
+  foreach get-message-filter "inform" "beliefs" [ convois-receive-inform ? ]
+end
+
+;;; Màj de nos beliefs
 to convois-receive-inform [new-message]
-  let new-beliefs get-content new-message
+  let new-beliefs item 1 get-content new-message
   foreach new-beliefs [
     ;show ?
     maj-belief-turtle ?
   ]
 end
 
+;;; Envoyer nos beliefs
 to convois-send-beliefs
   ; J'envoi mes beliefs a mon convois
   let receivers remove who get-my-convoi []
@@ -190,19 +210,194 @@ to convois-send-beliefs
     set receivers sentence receivers [who] of ( turtles with [ ((breed = convois and leader?) or (breed = drones) ) and (who != [who] of myself) ] )
   ]
   
-  let msg add-multiple-receivers receivers add-content beliefs create-message "inform"
-  ;show msg
+  let msg add-multiple-receivers receivers add-content (list "beliefs" beliefs) create-message "inform"
+  ; show msg
   send msg
+end
+
+;;; Renvoi le convoi auquel apartient l'appelant
+;;; Doit etre appeler avec une liste vide et retourne une liste d'id
+to-report get-my-convoi [team] 
+  if not member? who team [
+    set team lput who team
+  ]
+  let neightbors (turtle-set out-link-neighbors in-link-neighbors)
+  ask neightbors with [ not member? who team] [
+    set team remove-duplicates sentence team get-my-convoi team
+  ]
+  report team
+end
+
+;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+;    ELECTION LEADER ET SEPARATION
+;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+;;; Si quelqu'un s'est fait tirer dessus, séparation
+to convois-leader-responsibilities
+  ;if (nb-separations > 0 ) [ stop ]
+  foreach beliefs [ ; Si quelqu'un s'es fait tirer dessus : DISPERTION !
+    if first ? = "leader died" and nb-elections < 1 [
+      elect-new-leader
+      set nb-elections ( nb-elections + 1 )
+    ]
+      
+    if first ? = "hit" and nb-separations < 1 [
+      separate
+      set nb-separations ( nb-separations + 1 ) ; mais juste une fois
+      stop
+    ] 
+  ]
+end
+
+;;; Envoyer un CFP pour élire un leader et se séparer
+to send-cfp-separate
+  show "sending cfp"
+  let receivers remove who get-my-convoi []
+  send add-multiple-receivers receivers add-content (list "separate") create-message "cfp"
+end
+
+;;; Envoyer un CFP pour élire un leader
+to send-cfp-elect-leader
+  show "sending cfp elect"
+  let receivers remove who get-my-convoi []
+  send add-multiple-receivers receivers add-content (list "elect-leader") create-message "cfp"
+end
+
+to wait-and-see 
+end
+
+;;; Choisir meilleur leader et se séparer
+to separate
+  add-intention "get-best-leader-and-separate" "true"
+  add-intention "wait-and-see" timeout_expired 3
+  add-intention "send-cfp-separate" "true"
+end
+
+;;; Choisir meilleur leader et envoyer messages
+to get-best-leader-and-separate
+  let best get-best-propose "separate"
+  if best = nobody [ stop ]
+  show (word "And The Chosen One Is ............ " best "  !!!!!")
+  send add-content (list "separate") add-receiver best create-message "accept-proposal"
+end
+
+to elect-new-leader
+  add-intention "get-best-leader" "true"
+  add-intention "wait-and-see" timeout_expired 3
+  add-intention "send-cfp-elect-leader" "true"
+end
+
+;;; Choisir meilleur leader
+to get-best-leader
+  show "get-best-leader"
+  let best get-best-propose "elect-leader"
+  if best = nobody [ stop ] ; best = who
+  show (word "New leader because old one's dead ............ " best "  !!!!!")
+  send add-content (list "lead") add-receiver best create-message "accept-proposal"
+  set best convoi read-from-string best
+end
+
+;;; Choisir meilleure réponse
+to-report get-best-propose [cfp-type]
+  let response get-message-filter "propose" cfp-type
+  let best nobody
+  let maxi 0
+  foreach response [
+   let val item 1 get-content ?
+   if val > maxi [
+     set best get-sender ?
+     set maxi val
+   ]
+  ]
+  report best
+  ;report 4
+end
+
+;@@@@@@@@@@@@@@@@@@@@
+;    COM ORDERS
+;@@@@@@@@@@@@@@@@@@@@
+
+to convois-com-orders
+  foreach get-message-filter "cfp" "separate" [ convois-receive-cfp ? ] ; Je reçois mes cfp
+  foreach get-message-filter "cfp" "elect-leader" [ convois-receive-cfp ? ]
+  foreach get-message-filter "accept-proposal" "separate" [ convois-accept-lead-and-separate ] ; Je reçois mes accept-proposal
+  foreach get-message-filter "accept-proposal" "lead" [ convois-accept-lead ] ; Je reçois mes accept-proposal
+end
+
+;;; Recevoir un CFP
+to convois-receive-cfp [message]
+  ;show "received cfp"
+  let content get-content message
+  let sender get-sender message
+  if first content = "separate" [
+    send add-receiver sender add-content ( list "separate" good-leader? ) create-message "propose"
+   ;show "responded to cfp"
+  ]
+  if first content = "elect-leader" [
+    send add-receiver sender add-content ( list "elect-leader" good-leader? ) create-message "propose"
+    show "responded to cfp elect-leader"
+  ]
+end
+
+to-report good-leader?
+  ; Evidement faudra mettre quelque chose de plus peritent
+  let res life
+  if to-protect? [ set res ( res - 50 ) ]
+  report res
+end
+
+to convois-accept-lead-and-separate
+  ; Je viens d'etre choisi nouveau leader
+  show "I'm in charge now !"
+  set leader? true ; Je deviens leader
+  set color orange
+  ask my-out-links [ die ] ;
+  let convois-protect false
+  foreach get-my-convoi [] [
+    if [to-protect?] of turtle ? [ ; Si voiture à protéger
+      set convois-protect true
+      stop
+    ]
+  ]
+  if not convois-protect [ ; Si je n'ai pas le convois important, je prend mon temps
+    set genlongpath? true
+  ]
+end
+
+to convois-accept-lead
+  ; Je viens d'etre choisi nouveau leader
+  show "I'm in charge now !"
+  set leader? true ; Je deviens leader
+  set color orange
+    
+  ; set first car
+  let first-car-bool false
+  let first-car convoi who
+  let last-car convoi who
+  show first-car
   
+  ; find first out-link and in-link
+  let out sort-on [who] out-link-neighbors
+  let in sort-on [who] in-link-neighbors
+  
+  if not (out = []) [
+    set last-car item 0 out
+  ]
+  ; find first car
+  while [not first-car-bool] [
+    ifelse out = []
+      [ set first-car-bool true ]
+      [ set first-car item 0 out
+        set out sort-on [who] [out-link-neighbors] of item 0 out
+      ]
+  ]
+  ; si première voiture du convois n'est pas moi-même, créér lien
+  if not (first-car = convoi who) [
+    ask my-links [die]
+    ask first-car [ create-convoi-link-to myself ]
+    ask item 0 in [ create-convoi-link-to last-car ]
+  ]
 end
-
-to convois-com
-  ; D'abord on ecoute
-  convois-listen-messages
-  ; Apres on parle
-  convois-send-beliefs
-end
-
 
 ;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 ;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -277,8 +472,9 @@ to deplacement-cortege
       ]
       ; S'il n'y a pas de lien devant, c'est probablement que la voiture est morte, donc on devient leader
       [
+        show "My leader died..."
         set leader? true
-        set genlongpath? true
+        set lost-leader? true
         if not to-protect? [ set color orange ]
       ]
     ]

@@ -1,43 +1,25 @@
-;to maj-belief-turtle [bel]
-;  ; Mise a jour des informations relatives a une turtle, sert a eviter le cumul d'information et les doublons
-;  let more-recent-found? false
-;  foreach beliefs [
-;    show length beliefs
-;    show "1"
-;    if (first bel = first ?) and (first item 1 ? = first item 1 bel) [ 
-;      ; Si on trouve un ancien belief avec le meme id que le nouveau
-;      ifelse  item 4 item 1 ? > item 4 item 1 bel [ ; Si le beliefs trouve est plus recent
-;        set more-recent-found? true
-;        show "not removed"
-;        stop
-;      ]
-;      [
-;        show word "removed " ?
-;        remove-belief ?
-;        ;add-belief bel
-;        stop
-;      ]
-;    ]
-;  ]
-;  show "outside foreach"
-;  if not more-recent-found? [ ; Si on a pas trouve de belief plus recent
-;    show word "added " bel
-;    add-belief bel ; On ajoute alors les nouvelles informations
-;  ]
-;  ;show more-recent-found?
-;  
-;end
-
 to maj-belief-turtle [bel]
-  ; Mise a jour des informations relatives a une turtle, sert a eviter le cumul d'information et les doublons
   let exists false
   foreach beliefs [
-    if (first bel = first ?) and (first item 1 ? = first item 1 bel) [ 
-      ; Si on trouve un ancien belief avec le meme id que le nouveau
+    ; Si ce belief concerne la meme turtle et le meme type d'info
+    
+    if ((first item 1 ? = first item 1 bel) and ( first bel = first ? ))[ 
       set exists true
-      if item 4 item 1 bel > item 4 item 1 ? [ ; Si le belief trouvé est plus récent
-        remove-belief ? ; on supprime l'ancien
-        add-belief bel ; on ajoute le nouveau
+      
+      
+      if (first bel = "red" or first bel = "blue") [
+        if item 4 item 1 bel > item 4 item 1 ? [ ; Si le belief trouvé est plus récent
+          remove-belief ? ; on supprime l'ancien
+          add-belief bel ; on ajoute le nouveau
+        ]
+      ]
+      ; Si c'est un belief d'attaque
+      if first bel = "hit" [
+        ; Si le belief est plus recent
+        if item 1 item 1 bel > item 1 item 1 ? [
+          remove-belief ? ; on supprime l'ancien
+          add-belief bel ; on ajoute le nouveau
+        ]
       ]
     ]
     if exists [
@@ -47,11 +29,14 @@ to maj-belief-turtle [bel]
   if not exists [
     add-belief bel
   ]
+
 end
+
+
 
 to turtle-look
   ;Analyse de l'environement et mise a jour de croyance
-
+  ;show beliefs
   let prox other turtles in-cone-nowrap vision 180 
 
   foreach  sort-on [who] prox [
@@ -159,13 +144,6 @@ to find-path
   if [ obstacle? ] of patch-ahead speed [ find-path ]
   fd speed
 end
-
-;to find-path
-;  let p patch xcor ycor mapAlt
-;  let path (plan-astar p [patch-here] of target false)
-;  show p
-;  ;show path
-;end
 
 to move-randomly
   ; move randomly if no ennemy near us
