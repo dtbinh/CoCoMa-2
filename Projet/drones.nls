@@ -10,6 +10,7 @@ drones-own[
  vision
  side
  hit?
+ leader?
 ]
 
 to setup-drones
@@ -34,11 +35,13 @@ to setup-drones
       set color white
       set heading 0
       set hit? false
+      set leader? false
     ]
     
     let first-drone min [who] of drones
     
     ask drone first-drone [
+      set leader? true
       ifelse (who - 1) mod 2 = 0
       [ move-to patch (base-min-pxcor + 1) base-max-pycor solAlt ]
       [ move-to patch base-min-pxcor base-max-pycor solAlt ]
@@ -58,13 +61,18 @@ end
 
 to drones-think
 ;  Boucle principale des drones
-  ask drones [
-;    Premiere chose, on regarde autour
-    turtle-look
-;    Ensuite on met a jour les intentions
-    drones-manage-intentions
-;    Enfin on execute les intentions
-    drones-execute-intentions
+  ask drones [    
+      turtle-look ; On regarde autour
+      drones-com-info ; On lit les message d'observation
+      
+      ; Carburant ?
+      
+      if leader? [ ; Si je suis leader
+       drones-leader-responsibilities ; Je fait des trucs de leader
+      ]
+      drones-com-orders
+      
+      
    ]
 end
 
@@ -83,10 +91,63 @@ to set-protect
       ]
     ]
   ]
-  
+end  
 
+;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+;           COM INFOS
+;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
+to drones-com-info
+  listen-inform-messages
+  drones-send-beliefs
 end
+
+
+to drones-send-beliefs
+  ; J'envoi mes beliefs a ma flotte
+  let receivers []
+  foreach sort-on [who] drones[
+    if ( ( distance-nowrap ? < drones-com-radius ) and ( [who] of ? != who ) ) [
+      set receivers lput [who] of ? receivers
+    ] 
+  ]
+  ; Si je suis leader, je les envois aussi au drone et aux autres leaders
+  if leader? [
+    set receivers sentence receivers [who] of ( turtles with [ (breed = convois or breed = drones) and (leader?) and (who != [who] of myself) ] )
+  ]
+  let msg add-multiple-receivers receivers add-content (list "beliefs" beliefs) create-message "inform"
+  send msg
+end
+
+
+
+;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+;          LEADER RESPONSIBILITIES
+;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+
+to drones-leader-responsibilities
+  
+end
+
+
+
+;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+;           COM ORDERS
+;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+to drones-com-orders
+      
+      
+      
+end
+      
+
+;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+;           
+;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+
 
 ; intention to follow a convoy to protect
 to-report follow-protect?
@@ -107,6 +168,11 @@ end
 to drones-execute-intentions
   execute-intentions
 end
+
+
+
+
+
 
 ;;; Max drones / convoy (more drones on convoy that has the critical car)
 ;;; Leader ?

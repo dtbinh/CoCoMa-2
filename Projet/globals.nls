@@ -51,8 +51,17 @@ to turtle-look
 end
 
 
-to send-beliefs [receiver]
-  
+to listen-inform-messages
+  foreach get-message-filter "inform" "beliefs" [ receive-inform ? ]
+end
+
+;;; Màj de nos beliefs
+to receive-inform [new-message]
+  let new-beliefs item 1 get-content new-message
+  foreach new-beliefs [
+    ;show ?
+    maj-belief-turtle ?
+  ]
 end
   
  

@@ -411,7 +411,7 @@ INPUTBOX
 128
 720
 nb-drones
-0
+10
 1
 0
 Number
@@ -514,6 +514,17 @@ INPUTBOX
 824
 convois-vision
 15
+1
+0
+Number
+
+INPUTBOX
+643
+660
+758
+720
+drones-com-radius
+20
 1
 0
 Number
