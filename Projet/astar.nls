@@ -34,6 +34,8 @@ to-report plan-astar [start goal longpath?] ; start et goal sont des patchs
   let resign false ; si aucun chemin ne peut etre trouve (plus rien dans la liste open)
   let counter 0 ; si on a visite trop de patchs et que la recherche met trop de temps
 
+   let colorTmp Random 30
+
   while [not found and not resign] [
 
     ; Critere d'arret si echec (plus de patch a visiter ou trop de patchs deja visite)
@@ -59,8 +61,8 @@ to-report plan-astar [start goal longpath?] ; start et goal sont des patchs
 
       ; Dessin en live du chemin parcouru par astar
       if debug-verbose [
-      wait 0.01
-      ask pos [ set pcolor red ]
+      wait 0.0002
+      ask pos [ set pcolor red + colorTmp ]
       ]
 
       ; Critere d'arret si reussite: on est sur le but donc on a trouve un chemin
@@ -95,8 +97,10 @@ to-report plan-astar [start goal longpath?] ; start et goal sont des patchs
     let max-closed max [as-closed] of patches with [pzcor = start-pzcor] ; Récupère la valeur tdval max entre tous les patchs
     let min-closed min [as-closed] of patches with [pzcor = start-pzcor] ; Idem pour min tdval
     if (max-closed != min-closed) [ ; Si on a au moins appris quelquechose (sinon tous les patchs auront la même couleur, ce n'est pas intéressant)
+    
       ask patches with [pzcor = start-pzcor] [
         if debug [set plabel precision as-closed 1]
+        
         set pcolor (61 + ((as-closed - min-closed) / (max-closed - min-closed)) * 9 )
       ]
     ]

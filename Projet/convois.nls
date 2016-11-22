@@ -400,6 +400,7 @@ end
 
 
 to calcul-astar 
+
   let first-car min [who] of convois
     ; Calcul du plan AStar pour chaque leader si necessaire
     foreach sort-on [who] turtle-set convois with [leader? and not finished? and not dead?] [
@@ -408,6 +409,10 @@ to calcul-astar
       ; Note: on est oblige de le faire en dehors du ask sinon on ne peut pas acceder a tous les patchs
       if empty? as-path or length as-path < (id + 1) or empty? (item id as-path) or [need-new-path?] of ? [ ; s'il n'y a pas encore de chemin du tout, ou pas de chemin pour cette voiture, on cree un plan AStar
         ; Cree le plan AStar (attention a ca que le patch start soit au niveau ou il y a les obstacles, ici pzcor = mapAlt pour les obstacles)
+        show "calculating new path"
+        ask ? [
+          set need-new-path? false
+        ]
         let start-patch min-one-of (patches with [pzcor = mapAlt and not obstacle?]) [distance ?] ; on s'assure de choisir comme patch de depart un patch libre sans obstacle, sinon quand on split un convoi il se peut qu'il soit sur un obstacle et qu'il ne puisse jamais generer de chemin
         let new-path plan-astar ([patch-at 0 0 (pzcor * -1)] of start-patch) (one-of patches with [objectif?]) ([genlongpath?] of ?)
         ; S'il n'y a pas de plan et qu'on a essayé de trouver un long chemin, on attend la prochaine iteration et on reessaie mais avec un plan court

@@ -46,7 +46,7 @@ to turtle-look
     ]
   ]
   if debug [
-   show beliefs
+   ;show beliefs
   ]
 end
 

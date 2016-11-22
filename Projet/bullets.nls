@@ -23,12 +23,14 @@ to update-bullets
       ]
     ]
     
-    if xcor > world-width or xcor < 0 or ycor > world-height or ycor < 0 [
-        ; Si on entre dans la warpzone
-        die ; On y reste
-      ]
+    let dist distance-nowrap (patch-ahead speed)
     
-    fd speed
+    if dist > speed [
+      die
+     ]
+    
+     fd speed
+    
   ]
   
 end

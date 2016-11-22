@@ -266,7 +266,7 @@ simu-speed
 simu-speed
 0
 10
-6.5
+10
 .5
 1
 NIL
@@ -411,7 +411,7 @@ INPUTBOX
 128
 720
 nb-drones
-10
+0
 1
 0
 Number
@@ -493,7 +493,7 @@ SWITCH
 420
 play-sounds
 play-sounds
-1
+0
 1
 -1000
 
