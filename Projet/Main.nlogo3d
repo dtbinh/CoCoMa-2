@@ -116,7 +116,7 @@ SWITCH
 268
 debug-verbose
 debug-verbose
-1
+0
 1
 -1000
 
@@ -266,7 +266,7 @@ simu-speed
 simu-speed
 0
 10
-10
+2.5
 .5
 1
 NIL
@@ -458,7 +458,7 @@ bullets-speed
 bullets-speed
 0.05
 1
-0.3
+1
 0.05
 1
 NIL
@@ -513,7 +513,7 @@ INPUTBOX
 349
 824
 convois-vision
-15
+50
 1
 0
 Number
@@ -525,6 +525,28 @@ INPUTBOX
 720
 drones-com-radius
 20
+1
+0
+Number
+
+INPUTBOX
+373
+765
+608
+825
+astar-enemy-start
+20
+1
+0
+Number
+
+INPUTBOX
+631
+765
+786
+825
+astar-enemy-max-dist
+7
 1
 0
 Number

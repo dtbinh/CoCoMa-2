@@ -16,7 +16,7 @@ to setup
     ]
     ; generate a path and check is the convoi can reach its destination. If not, generate a new env
     [
-      let start-path (plan-astar ([[patch-at 0 0 (pzcor * -1)] of patch-here] of one-of convois with [leader?]) (one-of patches with [objectif?]) false)
+      let start-path (plan-astar ([[patch-at 0 0 (pzcor * -1)] of patch-here] of one-of convois with [leader?]) (one-of patches with [objectif?]) false [] )
       set as-path replace-item 0 as-path start-path
       if not empty? start-path [ set path-is-possible? true]
     ]

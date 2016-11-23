@@ -1,26 +1,48 @@
 
-; Plannification AStar d'un patch start vers un patch goal
-; Note: si l'heuristique est consistante/monotone (comme distance euclidienne/vol d'oiseau), h = 0 revient a faire Djikstra
-; Note2: on l'utilise avec le convoi mais on peut l'utiliser avec n'importe quel agent, c'est generique.
-; Note3: limite en 2D pour cette application mais on peut facilement la modifier pour accepter la 3D (enlever les limites with [pzcor ...])
-to-report plan-astar [start goal longpath?] ; start et goal sont des patchs
+to-report plan-astar [start goal longpath? b-list] 
 
-  ; Desactivation du refresh GUI (car calculs internes): Pour etre plus rapide, on dit a NetLogo qu'il peut calculer toute cette fonction sans avoir a updater le GUI (que des calculs internes), comme ca le slider de vitesse n'influencera pas la vitesse de ce code (sinon en slower ca met vraiment beaucoup de temps)
+  
   if not debug-verbose [no-display]
 
-  ; INIT
-  ; Ajustement du niveau du but par rapport au start, car le plan est en 2D ici
+  
   let start-pzcor [pzcor] of start
   set goal [patch-at 0 0 ([pzcor] of start - [pzcor] of goal)] of goal
 
-  ; (Re)init des variables AStar sur tous les patchs
-  ;let closed n-values world-height [n-values world-width [0]]
+ 
   ask patches [
-    set as-closed 0 ; sert a savoir si ce patch a deja ete visite. 0 = non visite, 1 = deja visite (et on visite en premier par le chemin optimal comme Djikstra, donc si un noeud a deja ete visite, on est sur qu'il est inutile de le revisiter par un autre chemin puisqu'il sera moins optimal que le premier chemin qui a conduit a ce patch - ceci est assure car on utilise la distance euclidienne a vol d'oiseau qui est une heuristique consistante/monotone, pas juste admissible)
-    set as-heuristic astar-faster * distance-nowrap goal ; si astar-faster > 1 alors on utilise Weighted AStar, ou le chemin est suboptimal avec une limite de cout au plus astar-faster fois supérieur au cout du chemin optimal. (eg: astar-faster = 2 signifie que le chemin sera au pire deux fois moins optimal au pire). Note: si astar-faster = 0 alors h = 0 pour tous les patchs et ca revient à l'algo de Dijkstra.
+    set as-closed 0 
+    set as-heuristic astar-faster * distance-nowrap goal 
+  ]
+  
+  foreach b-list[
+    if first ? = "red" [ 
+      let p patch (item 1 item 1 ?) (item 2 item 1 ?) (item 3 item 1 ?)
+      let el-time 1 + ticks - item 4 item 1 ?
+      
+      ask p[
+        
+        ifelse longpath? [
+          set as-heuristic astar-enemy-start
+          ask other patches in-radius astar-enemy-max-dist [
+            let dist distance p
+            let h  astar-enemy-start * ( 1 /  ( el-time * sqrt ( 2 * pi ) ) ) * e ^ ( -0.5 * ( dist / el-time ) * ( dist / el-time ) ) 
+            set as-heuristic 0 - h
+            ;show h
+          ]
+        ]
+        [
+          set as-heuristic  0 - astar-enemy-start
+          ask other patches in-radius astar-enemy-max-dist [
+            let dist distance p
+            let h  astar-enemy-start * ( 1 /  ( el-time * sqrt ( 2 * pi ) ) ) * e ^ ( -0.5 * ( dist / el-time ) * ( dist / el-time ) ) 
+            set as-heuristic  h
+          ]
+          
+        ]
+      ] 
+    ]
   ]
 
-  ; Init de l'algo en utilisant le patch de depart
   let pos start
   let h [as-heuristic] of start
   let g 0
@@ -61,8 +83,12 @@ to-report plan-astar [start goal longpath?] ; start et goal sont des patchs
 
       ; Dessin en live du chemin parcouru par astar
       if debug-verbose [
-      wait 0.0002
-      ask pos [ set pcolor red + colorTmp ]
+        wait 0.0002
+        ask pos [ 
+          ;set label item 0 next
+          let c item 0 next / ( 1.1 * world-width )
+          set pcolor max (list 10 (19.9 - c))
+        ]
       ]
 
       ; Critere d'arret si reussite: on est sur le but donc on a trouve un chemin
