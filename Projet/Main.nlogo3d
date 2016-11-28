@@ -34,7 +34,6 @@ patches-own [obstacle? base? hangar? objectif? bridge? ; variables topologiques 
 
 
 to go
-  ;print (word "--------  " ticks "  --------")
   if debug [
     print (word "--------  " ticks "  --------")
   ]
@@ -451,9 +450,9 @@ Number
 
 SLIDER
 419
-348
-591
-381
+423
+582
+456
 bullets-speed
 bullets-speed
 0.05
@@ -513,7 +512,7 @@ INPUTBOX
 349
 824
 convois-vision
-50
+60
 1
 0
 Number
@@ -546,7 +545,18 @@ INPUTBOX
 786
 825
 astar-enemy-max-dist
-7
+15
+1
+0
+Number
+
+INPUTBOX
+420
+348
+581
+408
+avoid-enemy-constant
+10
 1
 0
 Number

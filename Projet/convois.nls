@@ -340,7 +340,12 @@ end
 
 to-report convois-protect?
   let convois-protect false
-  foreach get-my-convoi [] [
+  
+  let my-convoi get-my-convoi []
+  
+  show my-convoi
+  
+  foreach my-convoi [
     if [to-protect?] of turtle ? [ ; Si voiture à protéger
       report true
     ]
