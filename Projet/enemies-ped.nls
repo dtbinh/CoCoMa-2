@@ -65,15 +65,15 @@ end
 
 to enemies-ped-manage-intentions
   set-prox-target
-  if target = nobody [
-    set-explore-target
-  ]   
+;  if target = nobody [
+;    set-explore-target
+;  ]   
 end
 
-to set-explore-target
-  set explore-target patch random-xcor random-ycor mapAlt
- ; add-intention "explore" "explore?"
-end
+;to set-explore-target
+;  set explore-target patch random-xcor random-ycor mapAlt
+; ; add-intention "explore" "explore?"
+;end
 
 
 to enemies-ped-execute-intentions

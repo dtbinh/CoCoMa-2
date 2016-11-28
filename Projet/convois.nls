@@ -14,6 +14,7 @@ convois-own [incoming-queue
   hit?
   lost-leader? ; Did our leader die ?
   need-new-path?
+  nb-protectors ; number of drones protection this car
   ]
 
 to setup-convois
@@ -54,6 +55,7 @@ to setup-convois
       set hit? false
       set lost-leader? false
       set need-new-path? false
+      set nb-protectors 0
       ; Visu
       set label who ; display the car names
     ]
