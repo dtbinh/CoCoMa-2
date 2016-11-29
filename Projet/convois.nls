@@ -242,6 +242,7 @@ to get-best-leader-and-separate
   show (word "And The Chosen One Is ............ " best "  !!!!!")
   send add-content (list "separate") add-receiver best create-message "accept-proposal"
   
+  ask convoi read-from-string best [ ask my-out-links [die]]
   
   ifelse convois-protect? [ ; Si je n'ai pas le convois important, je prend mon temps
     set genlongpath? false
@@ -326,8 +327,10 @@ to convois-accept-lead-and-separate
   show "I'm in charge now !"
   set leader? true ; Je deviens leader
   set color orange
-  ask my-out-links [ die ] ;
-  
+  ;show who
+  ;show my-out-links
+  ;ask my-out-links [ die ] ;
+  ;show my-out-links
   ifelse convois-protect? [ ; Si je n'ai pas le convois important, je prend mon temps
     set genlongpath? false
     set need-new-path? true

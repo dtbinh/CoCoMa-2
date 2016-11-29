@@ -334,7 +334,7 @@ INPUTBOX
 118
 540
 nb-enemies-ped
-0
+50
 1
 0
 Number
@@ -410,7 +410,7 @@ INPUTBOX
 128
 720
 nb-drones
-2
+0
 1
 0
 Number
