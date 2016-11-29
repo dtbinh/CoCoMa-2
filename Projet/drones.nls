@@ -11,6 +11,8 @@ drones-own[
  side
  hit?
  leader?
+ low-fuel?
+ closest-base-patch
 ]
 
 to setup-drones
@@ -28,7 +30,7 @@ to setup-drones
       set dead? false
       set protect nobody
       set target nobody
-      set speed 0.05 * simu-speed * enemies-ped-speed-coef
+      set speed 0.05 * simu-speed * drones-speed-coef
       set vision drones-vision
       set side "blue"
       set shape "airplane"
@@ -36,6 +38,7 @@ to setup-drones
       set heading 0
       set hit? false
       set leader? false
+      set low-fuel? false
     ]
     
     let first-drone min [who] of drones
@@ -65,29 +68,28 @@ to drones-think
       turtle-look ; On regarde autour
       drones-com-info ; On lit les message d'observation
       
-      ; Carburant ?
+      manage-fuel
       
       if leader? [ ; Si je suis leader
-       drones-leader-responsibilities ; Je fait des trucs de leader
+        drones-leader-responsibilities ; Je fait des trucs de leader
       ]
       drones-com-orders
-      
+      drones-manage-intentions
+      drones-execute-intentions
       
    ]
 end
 
 to set-protect
+  ;let nb-drones nb-convois / nb-drones
   if protect = nobody [
-    if who = 28 [ show protect ]
     foreach beliefs [ 
       if first ? = side [ 
         let tmp turtle first item 1 ?
-        if [breed] of tmp = convois [
+        if [breed] of tmp = convois and [nb-protectors] of tmp < nb-drones / nb-cars [
           set protect tmp
-          add-intention "follow-protect" "follow-protect?"
+          add-intention "hover-over-convoy" "follow-protect?"
         ]
-      ;show [breed] of tmp
-      ;set protect convoi first item 1 ? 
       ]
     ]
   ]
@@ -147,18 +149,67 @@ end
 ;           
 ;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
+; manage fuel
+to manage-fuel
+  if fuel <= 0 [
+    show "I have no more fuel..."
+    die
+  ]
+  
+  if (not low-fuel?) [ set closest-base-patch min-one-of patches with [base?] [distance-nowrap myself] ]
 
+  ; if low fuel, return to base to refuel
+  ;if (fuel - 5) < distance-nowrap closest-base-patch [
+  if fuel - distance-nowrap closest-base-patch  - 5 < 0 [
+    set low-fuel? true
+    face-nowrap patch [pxcor] of closest-base-patch [pycor] of closest-base-patch 1
+    fd speed
+    set fuel fuel - speed
+    ;show fuel
+  ]
+  
+  let pxh [pxcor] of patch-here
+  let pyh [pycor] of patch-here
+  ; if at base, refuel
+  if low-fuel? and [base?] of patch pxh pyh 0 [
+    set fuel max-drones-fuel
+    show "Refilling tank..."
+    set low-fuel? false
+  ]
+  
+end
 
 ; intention to follow a convoy to protect
 to-report follow-protect?
   let tmp distance-nowrap protect < drones-vision
-  if not tmp [ set protect nobody ]
+  ifelse not tmp
+  [ set protect nobody ]
+  [ ask protect [ set nb-protectors nb-protectors + 1 ] ]
   report not tmp
 end
 
 to follow-protect
-  face-nowrap protect
+  if not low-fuel? [
+    face-nowrap protect
+    fd speed
+    set fuel fuel - speed
+  ]
+end
+
+to hover-over-convoy
+  let rd 5
+  if who mod 2 = 0 [ set rd -5 ]
+  ; if convoy moves left / right rd = 5, else rd = -5 (à modifier)
+  let p-ahead patch ([xcor] of protect + rd) ([ycor] of protect + rd) [zcor] of protect
+  let tmp-heading heading
+  face-nowrap p-ahead
+  ;ask protect [ ask patches in-radius 5 with [pzcor = 0] [ set pcolor red ] ]
   fd speed
+  
+  ifelse heading = 355
+  [ set heading 0 ]
+  [ set heading tmp-heading + 5 ]
+  repeat 3 [ fd speed ]
 end
 
 to drones-manage-intentions
@@ -168,18 +219,5 @@ end
 to drones-execute-intentions
   execute-intentions
 end
-
-
-
-
-
-
-;;; Max drones / convoy (more drones on convoy that has the critical car)
-;;; Leader ?
-;;; Hover over convoy
-;;; Shoot enemies
-;;; Go to base to refuel
-;;; Prioritize the critical car if it's being shot on
-;;;
 
 

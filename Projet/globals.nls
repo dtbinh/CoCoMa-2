@@ -32,8 +32,6 @@ to maj-belief-turtle [bel]
 
 end
 
-
-
 to turtle-look
   ;Analyse de l'environement et mise a jour de croyance
   ;show beliefs
@@ -51,11 +49,12 @@ to turtle-look
 end
 
 
+;; filter inform messages
 to listen-inform-messages
   foreach get-message-filter "inform" "beliefs" [ receive-inform ? ]
 end
 
-;;; Màj de nos beliefs
+;; màj de nos beliefs
 to receive-inform [new-message]
   let new-beliefs item 1 get-content new-message
   foreach new-beliefs [
@@ -63,9 +62,8 @@ to receive-inform [new-message]
     maj-belief-turtle ?
   ]
 end
-  
- 
 
+;; set a target and chase after it, or move randomly
 to set-prox-target
   ; On recherche un ennemi dans la base de recherche
   if target != nobody [ stop ] ; [ NOTE : on aura surement envie de faire autre chose par la suite, par exemple changer de cible si on en repere une plus proche ]
@@ -88,6 +86,7 @@ to set-prox-target
   
 end
 
+;; chase target intention
 to-report chase-target?
   ; Si la cible est morte ou hors du champ de vision, on arrete
   let tmp not (([dead?] of target) or (distance-nowrap target > vision) )
@@ -103,12 +102,11 @@ to chase-target
     follow-target ; Sinon, si elle est encore visible, on la suit
   ]
   [
-    
-    ;On avance vers sa derniere position connue ?
-    
+    ;On avance vers sa derniere position connue ?   
   ]
 end
 
+;; shoot ennemy 
 to shoot-target
   if ticks - last-shot > 15 / simu-speed  [ ; Attention : la cadence de tir ne devrais pas etre defini ici
     if play-sounds [sound:play-note "GUNSHOT" 128 64 0.2]
@@ -124,6 +122,7 @@ to shoot-target
   ]
 end
 
+;; face target, and move towards it
 to follow-target
   face-nowrap target ; On fait face a la cible
   ifelse [obstacle?] of patch-ahead speed
@@ -131,32 +130,18 @@ to follow-target
     [ fd speed ] ; On avance vers elle
 end
 
-;to-report obstacle-ahead?
-;  let turtle-heading heading
-;  face-nowrap target
-;  
-;  let dst 1
-;  let obs false
-;  while [ dst <= distance target and obs = false ]
-;  [
-;    set obs [ obstacle? ] of patch-ahead dst
-;    set dst dst + 1
-;  ]
-;  ; set back to initial heading
-;  set heading turtle-heading
-;  report obs
-;end
-
-to find-path
-  lt 20
+;; random circular move
+to move-randomly
+  ; move randomly if no ennemy near us
+  if random 100 < 50 [ lt 2 ]
   if [ obstacle? ] of patch-ahead speed [ find-path ]
   fd speed
 end
 
-to move-randomly
-  ; move randomly if no ennemy near us
-  if random 100 < 50 [ lt 2 ]
-  if [ obstacle? ] of patch-ahead speed [ stop ]
+;; if obstacle encountered, turn left to avoid obstacle 
+to find-path
+  lt 20
+  if [ obstacle? ] of patch-ahead speed [ find-path ]
   fd speed
 end
 
