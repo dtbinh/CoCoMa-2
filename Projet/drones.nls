@@ -13,6 +13,12 @@ drones-own[
  leader?
  low-fuel?
  closest-base-patch
+ 
+ 
+ main-protector?
+ behavior
+ 
+ 
 ]
 
 to setup-drones
@@ -39,6 +45,8 @@ to setup-drones
       set hit? false
       set leader? false
       set low-fuel? false
+      set behavior nobody
+      set main-protector? false
     ]
     
     let first-drone min [who] of drones
@@ -59,6 +67,38 @@ to setup-drones
       ]
     ]
   ]
+  
+end
+
+
+to drones-self-loop
+  
+  if behavior = nobody [
+    set-behavior orbit-behavior
+  ]
+  
+  
+  
+  run-behavior
+  
+end
+
+
+to run-behavior  
+    run item 1 behavior  
+end
+
+; Behavior sutructure : list : name run-fuction priority
+
+
+to-report orbit-behavior [ target ]
+  
+  report list "B-orbit" "orbit" 2 
+  
+end
+
+to orbit
+  
   
 end
 
