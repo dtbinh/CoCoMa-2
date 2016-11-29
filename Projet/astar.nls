@@ -44,9 +44,10 @@ to-report plan-astar [start goal longpath? b-list]
             set as-heuristic as-heuristic + avoid-enemy-constant * h
           ]
           
-          ask other patches in-radius astar-enemy-max-dist + 3 [
+          ask other patches in-radius (astar-enemy-max-dist + 3) [
               set plabel as-heuristic
           ]
+        ]
       ] 
     ]
   ]
