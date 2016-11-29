@@ -71,11 +71,61 @@ to setup-drones
 end
 
 
+;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+;      BEHAVIOR ZONE
+;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+; Behavior sutructure : list : name run-fuction priority optional1 optional2 ....
+
+to-report opt1 [ b ]
+  
+  report item 3 b
+  
+end
+
+to-report opt [ b ]
+  
+  report item 3 b
+  
+end
+
+to-report priority [ b ]
+  
+  report item 2 b
+  
+end
+
+
+;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+;      DRONES-BEHAVIOR LOOP
+;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+
 to drones-self-loop
   
   if behavior = nobody [
-    set-behavior orbit-behavior
+    set-behavior orbit-behavior min-one-of turtles with [breed = convois] [distance-nowrap myself] ; not the best thing to do
+    ;Ask leader for orders
   ]
+  
+  if need-to-refuel [ 
+    set-behavior refuel-behavior 
+  ]
+  
+  if main-protector? [
+    ; If my-convois is under attack
+    ; Destroy the guy attacking it
+  ]
+  
+  ifelse leader?[
+    
+  ][
+    
+  ] 
   
   
   
@@ -88,19 +138,127 @@ to run-behavior
     run item 1 behavior  
 end
 
-; Behavior sutructure : list : name run-fuction priority
 
 
-to-report orbit-behavior [ target ]
+;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+;          ORBIT BEHAVIOR
+;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+
+to-report orbit-behavior [ atra ]
   
-  report list "B-orbit" "orbit" 2 
+  report list "B-orbit" "orbit" 2 atra ; current angle ?
   
 end
 
 to orbit
   
   
+  
+  
 end
+
+;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+;          REFUEL BEHAVIOR
+;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+to-report need-to-refuel
+  
+  let rnd random 1000
+  
+  if rnd < 5 [
+   report true ; Maybe we should give a lower priority to refuelling in this case
+  ]
+  
+  let distance-to-base distance-nowrap min-one-of patches with [base?] [distance-nowrap myself] ; There should be a better way
+  
+  if distance-to-base ap< fuel + 5 [
+    report true
+ 
+   ]
+  report false
+  
+end
+
+
+to refuel-behavior ; optionals : closest base patch
+  
+  report list "B-refuel" "refuel" 5 min-one-of patches with [base?] [distance-nowrap myself]
+  
+end
+
+to refuel
+  
+ if distance-nowrap opt1 behavior < 1 [
+  
+  set fuel max-drones-fuel
+  set behavior nobody 
+   
+ ]
+  
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+;          NOT BEHAVIORS 
+;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+
+to drone-move-to [ tg ]
+  
+  face-nowrap tg
+  forward speed
+  
+  set fuel (fuel - 1) ; Should depend on speed and altitude and y direction
+  
+  if fuel = 0 [
+   
+   die  
+    
+  ]
+  
+end
+
 
 to drones-think
 ;  Boucle principale des drones
