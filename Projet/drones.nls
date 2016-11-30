@@ -85,9 +85,21 @@ to-report opt1 [ b ]
   
 end
 
-to-report opt [ b ]
+to-report opt2 [ b ]
   
-  report item 3 b
+  report item 4 b
+  
+end
+
+to-report opt3 [ b ]
+  
+  report item 5 b
+  
+end
+
+to set-opt [index value]
+  
+  set behavior replace-item (2 + index) behavior value
   
 end
 
@@ -108,12 +120,12 @@ end
 to drones-self-loop
   
   if behavior = nobody [
-    set-behavior orbit-behavior min-one-of turtles with [breed = convois] [distance-nowrap myself] ; not the best thing to do
+    set-behavior orbit-behavior min-one-of turtles with [breed = convois] [distance-nowrap myself]  7 ; not the best thing to do
     ;Ask leader for orders
   ]
   
   if need-to-refuel [ 
-    set-behavior refuel-behavior 
+    set-behavior refuel-behavior
   ]
   
   if main-protector? [
@@ -125,9 +137,7 @@ to drones-self-loop
     
   ][
     
-  ] 
-  
-  
+  ]
   
   run-behavior
   
@@ -138,7 +148,14 @@ to run-behavior
     run item 1 behavior  
 end
 
-
+to set-behavior [ new-behavior ]
+  if behavior = nobody or  ( priority behavior ) <= ( priority new-behavior ) [
+   
+    set behavior new-behavior  
+    
+  ]
+  
+end
 
 ;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 ;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -147,18 +164,43 @@ end
 ;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 
-to-report orbit-behavior [ atra ]
+to-report orbit-behavior [ atra opt-distance ] ; opt1 : attracter , opt2 : optimal distance to attracter , opt3 : current angle
   
-  report list "B-orbit" "orbit" 2 atra ; current angle ?
+  let angle ( acos ( abs (  ( [ycor] of atra )  - ( ycor ) ) / ( distance-nowrap atra ) ) )
+  
+  report (list "B-orbit" "orbit" 2 atra opt-distance angle); current angle ?
   
 end
 
 to orbit
   
   
+  ask geo [ 
+    
+    setxyz ( [xcor] of opt1 [behavior] of myself ) ( [ycor] of opt1 [behavior] of myself )  ([zcor] of myself)
+    
+    set heading opt3 [behavior] of myself
+    
+    while [( not [obstacle?] of patch-ahead 1) and ( distance-nowrap opt1 [behavior] of myself ) <= ( opt2 [behavior] of myself )][ ; While no obstacle found and distance < optimal-distance
+      
+      if distance-nowrap patch-ahead 1 > 2 [
+         stop 
+      ]
+      
+      fd 0.5
+    ] 
+    
+    set zcor [zcor] of myself
+  ]
   
+  drone-move-to geo false
+  
+  if distance-nowrap geo < speed [
+   set-opt 3 opt3 behavior + 15 * speed  
+  ]
   
 end
+
 
 ;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 ;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -170,29 +212,35 @@ to-report need-to-refuel
   
   let rnd random 1000
   
-  if rnd < 5 [
+  if rnd < 7 [
+   show "Refuel : cause RND"
    report true ; Maybe we should give a lower priority to refuelling in this case
   ]
   
-  let distance-to-base distance-nowrap min-one-of patches with [base?] [distance-nowrap myself] ; There should be a better way
+  let distance-to-base distance-nowrap min-one-of patches with [base? = true] [distance-nowrap myself] ; There should be a better way
   
-  if distance-to-base ap< fuel + 5 [
+  if distance-to-base > ( fuel / speed ) + 15 [
+    show "Refuel : cause LOW FUEL"
     report true
- 
    ]
+  
   report false
   
 end
 
 
-to refuel-behavior ; optionals : closest base patch
+to-report refuel-behavior ; optionals : closest base patch
   
-  report list "B-refuel" "refuel" 5 min-one-of patches with [base?] [distance-nowrap myself]
+  let closest min-one-of patches with [base?] [distance-nowrap myself]
+  let pat patch [pxcor] of closest [pycor] of closest zcor
+  report ( list "B-refuel" "refuel" 5 pat )
   
 end
 
 to refuel
-  
+ 
+ drone-move-to opt1 behavior true
+ 
  if distance-nowrap opt1 behavior < 1 [
   
   set fuel max-drones-fuel
@@ -244,23 +292,93 @@ end
 ;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 
-to drone-move-to [ tg ]
+to drone-move-to [ tg abort-obstacles ]
   
   face-nowrap tg
-  forward speed
   
-  set fuel (fuel - 1) ; Should depend on speed and altitude and y direction
-  
-  if fuel = 0 [
-   
-   die  
-    
+  if not abort-obstacles [ 
+    drone-move-fd
+    stop
   ]
   
+  ask geo [
+    
+   setxyz [xcor] of myself [ycor] of myself [zcor] of myself
+   face tg
+
+   let obs-bool? false
+   let best-patch nobody
+   
+   let best-dist 0
+   
+   while [distance-nowrap tg > 2 and not obs-bool?] [
+    
+     if [obstacle?] of patch-ahead 1 [
+       set obs-bool? true
+     
+       set best-patch patch-here
+       set best-dist distance-nowrap myself
+     ]
+     fd 1
+   ]
+   
+
+   if obs-bool? = true[
+      
+    let angle 1 
+    let r true
+   
+    repeat 50 [
+   
+      setxyz [xcor] of myself [ycor] of myself [zcor] of myself
+      
+      ifelse r [ set heading ( heading + angle ) ] [ set heading ( heading - angle ) ]
+      
+      while [ not [obstacle?] of patch-ahead 1 ] [
+        fd 1
+      ]
+      
+      if distance-nowrap myself > best-dist [
+        set best-dist distance-nowrap myself
+        set best-patch patch-here
+      ]
+       set r not r
+       if r [ set angle angle + 2 ]
+    ]
+    
+    set tg best-patch
+    
+   ]
+  ]
+  
+  face-nowrap tg
+  
+  drone-move-fd
+  
+end
+
+to drone-move-fd  
+ 
+ forward speed
+ 
+ ; if no obstacle ahead
+ 
+ set fuel (fuel - 1) ; Should depend on speed and altitude and y direction
+ drone-check-crash
+ 
+end
+
+to drone-check-crash
+  if fuel = 0 [
+   die   
+  ]
 end
 
 
 to drones-think
+  
+  
+  
 ;  Boucle principale des drones
   ask drones [    
       turtle-look ; On regarde autour
@@ -269,11 +387,14 @@ to drones-think
       manage-fuel
       
       if leader? [ ; Si je suis leader
-        drones-leader-responsibilities ; Je fait des trucs de leader
+       ; drones-leader-responsibilities ; Je fait des trucs de leader
       ]
-      drones-com-orders
-      drones-manage-intentions
-      drones-execute-intentions
+      
+      drones-self-loop
+      
+      ;drones-com-orders
+      ;drones-manage-intentions
+      ;drones-execute-intentions
       
    ]
 end

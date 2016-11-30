@@ -3,6 +3,9 @@ to setup
     
   ; The setup generates environments until one of them is acceptable (the convoi can accomplish the mission)
   
+  
+  
+  
   let path-is-possible? false
   while [not path-is-possible?] [
     clear-all
@@ -27,9 +30,19 @@ to setup
   ;setup-citizens
 ;  setup-hq
 
+  create-geots 1 [ 
+    setxyz 0 0 0
+       ;set hidden? true
+  ]
+  
+  show count geots
+  
+  set geo ( one-of geots )
+
   setup-precache
   display ; reenable gui display
   reset-ticks
+  show count geots
 end
 
 ; Initial parameters
@@ -56,6 +69,9 @@ to setup-globals
   
   set nb-separations 0
   set nb-elections 0
+  
+  
+  
 end
 
 

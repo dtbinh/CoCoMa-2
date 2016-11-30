@@ -8,6 +8,9 @@ breed [drones drone]
 breed [enemies-ped enemy-ped]
 breed [bullets bullet]
 breed [HQs HQ]
+
+breed [geots geot]
+
 directed-link-breed [path-links path-link]
 undirected-link-breed [dummy-links dummy-link]
 directed-link-breed [convoi-links convoi-link]
@@ -26,6 +29,8 @@ globals [mapAlt solAlt basseAlt hauteAlt ; variables topologiques Z discretise: 
   nb-separations
   nb-elections
 
+  geo
+
   ]
 
 patches-own [obstacle? base? hangar? objectif? bridge? ; variables topologiques au niveau mapAlt, permet de definir les patchs praticables et ceux qui sont des obstacles
@@ -34,6 +39,7 @@ patches-own [obstacle? base? hangar? objectif? bridge? ; variables topologiques 
 
 
 to go
+
   if debug [
     print (word "--------  " ticks "  --------")
   ]
@@ -135,7 +141,7 @@ INPUTBOX
 82
 115
 nb-cars
-7
+1
 1
 0
 Number
@@ -163,7 +169,7 @@ INPUTBOX
 176
 114
 nb-mountains
-2
+20
 1
 0
 Number
@@ -174,7 +180,7 @@ INPUTBOX
 251
 114
 nb-lakes
-5
+0
 1
 0
 Number
@@ -185,7 +191,7 @@ INPUTBOX
 329
 114
 nb-rivers
-3
+0
 1
 0
 Number
@@ -334,7 +340,7 @@ INPUTBOX
 118
 540
 nb-enemies-ped
-50
+0
 1
 0
 Number
@@ -410,7 +416,7 @@ INPUTBOX
 128
 720
 nb-drones
-0
+1
 1
 0
 Number
@@ -421,7 +427,7 @@ INPUTBOX
 282
 720
 max-drones-fuel
-100
+3000
 1
 0
 Number
@@ -512,7 +518,7 @@ INPUTBOX
 349
 824
 convois-vision
-60
+10
 1
 0
 Number
@@ -567,7 +573,7 @@ INPUTBOX
 933
 721
 drones-speed-coef
-1.3
+7
 1
 0
 Number
