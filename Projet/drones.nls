@@ -193,7 +193,7 @@ to orbit
     set zcor [zcor] of myself
   ]
   
-  drone-move-to geo false
+  drone-move-to geo 
   
   if distance-nowrap geo < speed [
    set-opt 3 opt3 behavior + 15 * speed  
@@ -239,7 +239,7 @@ end
 
 to refuel
  
- drone-move-to opt1 behavior true
+ drone-move-to opt1 behavior 
  
  if distance-nowrap opt1 behavior < 1 [
   
@@ -292,74 +292,81 @@ end
 ;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 
-to drone-move-to [ tg abort-obstacles ]
+to drone-move-to [ tg ] ; abort-obstacles ]
+  
   
   face-nowrap tg
   
-  if not abort-obstacles [ 
-    drone-move-fd
-    stop
+  while  [obstacle?] of patch-ahead 2 [
+    rt
   ]
-  
-  ask geo [
-    
-   setxyz [xcor] of myself [ycor] of myself [zcor] of myself
-   face tg
-
-   let obs-bool? false
-   let best-patch nobody
-   
-   let best-dist 0
-   
-   while [distance-nowrap tg > 2 and not obs-bool?] [
-    
-     if [obstacle?] of patch-ahead 1 [
-       set obs-bool? true
-     
-       set best-patch patch-here
-       set best-dist distance-nowrap myself
-     ]
-     fd 1
-   ]
-   
-
-   if obs-bool? = true[
-      
-    let angle 1 
-    let r true
-   
-    repeat 50 [
-   
-      setxyz [xcor] of myself [ycor] of myself [zcor] of myself
-      
-      ifelse r [ set heading ( heading + angle ) ] [ set heading ( heading - angle ) ]
-      
-      while [ not [obstacle?] of patch-ahead 1 ] [
-        fd 1
-      ]
-      
-      if distance-nowrap myself > best-dist [
-        set best-dist distance-nowrap myself
-        set best-patch patch-here
-      ]
-       set r not r
-       if r [ set angle angle + 2 ]
-    ]
-    
-    set tg best-patch
-    
-   ]
-  ]
-  
-  face-nowrap tg
   
   drone-move-fd
+  
+;  if not abort-obstacles [ 
+;    drone-move-fd
+;    stop
+;  ]
+;  
+;  ask geo [
+;    
+;   setxyz [xcor] of myself [ycor] of myself [zcor] of myself
+;   face tg
+;
+;   let obs-bool? false
+;   let best-patch nobody
+;   
+;   let best-dist 0
+;   
+;   while [distance-nowrap tg > 2 and not obs-bool?] [
+;    
+;     if [obstacle?] of patch-ahead 1 [
+;       set obs-bool? true
+;     
+;       set best-patch patch-here
+;       set best-dist distance-nowrap myself
+;     ]
+;     fd 1
+;   ]
+;   
+;
+;   if obs-bool? = true[
+;      
+;    let angle 1 
+;    let r true
+;   
+;    repeat 50 [
+;   
+;      setxyz [xcor] of myself [ycor] of myself [zcor] of myself
+;      
+;      ifelse r [ set heading ( heading + angle ) ] [ set heading ( heading - angle ) ]
+;      
+;      while [ not [obstacle?] of patch-ahead 1 ] [
+;        fd 1
+;      ]
+;      
+;      if distance-nowrap myself > best-dist [
+;        set best-dist distance-nowrap myself
+;        set best-patch patch-here
+;      ]
+;       set r not r
+;       if r [ set angle angle + 2 ]
+;    ]
+;    
+;    set tg best-patch
+;    
+;   ]
+;  ]
+;  
+;  face-nowrap tg
+;  
+;  drone-move-fd
   
 end
 
 to drone-move-fd  
- 
- forward speed
+  
+  forward speed
  
  ; if no obstacle ahead
  
@@ -370,7 +377,7 @@ end
 
 to drone-check-crash
   if fuel = 0 [
-   die   
+    die   
   ]
 end
 
@@ -379,15 +386,15 @@ to drones-think
   
   
   
-;  Boucle principale des drones
+  ;  Boucle principale des drones
   ask drones [    
-      turtle-look ; On regarde autour
+    turtle-look ; On regarde autour
       drones-com-info ; On lit les message d'observation
       
       manage-fuel
       
       if leader? [ ; Si je suis leader
-       ; drones-leader-responsibilities ; Je fait des trucs de leader
+                   ; drones-leader-responsibilities ; Je fait des trucs de leader
       ]
       
       drones-self-loop
@@ -396,7 +403,7 @@ to drones-think
       ;drones-manage-intentions
       ;drones-execute-intentions
       
-   ]
+  ]
 end
 
 to set-protect
@@ -458,11 +465,11 @@ end
 ;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 to drones-com-orders
-      
-      
-      
+  
+  
+  
 end
-      
+
 
 ;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 ;           
@@ -476,7 +483,7 @@ to manage-fuel
   ]
   
   if (not low-fuel?) [ set closest-base-patch min-one-of patches with [base?] [distance-nowrap myself] ]
-
+  
   ; if low fuel, return to base to refuel
   ;if (fuel - 5) < distance-nowrap closest-base-patch [
   if fuel - distance-nowrap closest-base-patch  - 5 < 0 [
