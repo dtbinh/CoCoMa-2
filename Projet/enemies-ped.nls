@@ -12,6 +12,7 @@ enemies-ped-own[
  range
  incoming-queue
  hit?
+ shooter
 ]
 
 to setup-enemies-ped

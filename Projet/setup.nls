@@ -32,7 +32,7 @@ to setup
 
   create-geots 1 [ 
     setxyz 0 0 0
-       ;set hidden? true
+    set color red
   ]
   
   show count geots

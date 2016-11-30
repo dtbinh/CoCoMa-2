@@ -17,7 +17,7 @@ drones-own[
  
  main-protector?
  behavior
- 
+ last-shot
  
 ]
 
@@ -47,6 +47,7 @@ to setup-drones
       set low-fuel? false
       set behavior nobody
       set main-protector? false
+      set last-shot 0
     ]
     
     let first-drone min [who] of drones
@@ -109,6 +110,12 @@ to-report priority [ b ]
   
 end
 
+to-report behavior-name [ b ]
+  
+  report item 0 b
+  
+end
+
 
 ;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 ;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -120,7 +127,7 @@ end
 to drones-self-loop
   
   if behavior = nobody [
-    set-behavior orbit-behavior min-one-of turtles with [breed = convois] [distance-nowrap myself]  7 ; not the best thing to do
+    set-behavior orbit-behavior [who] of min-one-of turtles with [breed = convois] [distance-nowrap myself]  7 ; not the best thing to do
     ;Ask leader for orders
   ]
   
@@ -131,6 +138,26 @@ to drones-self-loop
   if main-protector? [
     ; If my-convois is under attack
     ; Destroy the guy attacking it
+  ]
+  
+  if behavior-name behavior != "B-attack"[
+  
+    foreach beliefs [
+      
+      if first ? = "hit" [
+        
+        let tg turtle item 2 item 1 ?
+        ;show ( word "target : " tg " " (item 2 item 1 ?))
+        
+        if tg != nobody [
+          
+          set-behavior attack-behavior (item 2 item 1 ?) true
+        
+        ] 
+        
+      ]
+      
+    ]
   ]
   
   ifelse leader?[
@@ -164,9 +191,11 @@ end
 ;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 
-to-report orbit-behavior [ atra opt-distance ] ; opt1 : attracter , opt2 : optimal distance to attracter , opt3 : current angle
+to-report orbit-behavior [ atra opt-distance ] ; opt1 : attracter , opt2 : optimal distance to attracter , opt3 : current angle 
   
-  let angle ( acos ( abs (  ( [ycor] of atra )  - ( ycor ) ) / ( distance-nowrap atra ) ) )
+  let atr turtle atra
+  
+  let angle ( acos ( abs (  ( [ycor] of atr )  - ( ycor ) ) / ( distance-nowrap atr ) ) )
   
   report (list "B-orbit" "orbit" 2 atra opt-distance angle); current angle ?
   
@@ -174,14 +203,15 @@ end
 
 to orbit
   
+  let atr turtle opt1 behavior
   
   ask geo [ 
     
-    setxyz ( [xcor] of opt1 [behavior] of myself ) ( [ycor] of opt1 [behavior] of myself )  ([zcor] of myself)
+    setxyz ( [xcor] of atr ) ( [ycor] of atr )  ([zcor] of myself)
     
     set heading opt3 [behavior] of myself
     
-    while [( not [obstacle?] of patch-ahead 1) and ( distance-nowrap opt1 [behavior] of myself ) <= ( opt2 [behavior] of myself )][ ; While no obstacle found and distance < optimal-distance
+    while [( not [obstacle?] of patch-ahead 1) and ( distance-nowrap atr ) <= ( opt2 [behavior] of myself )][ ; While no obstacle found and distance < optimal-distance
       
       if distance-nowrap patch-ahead 1 > 2 [
          stop 
@@ -212,7 +242,7 @@ to-report need-to-refuel
   
   let rnd random 1000
   
-  if rnd < 7 [
+  if rnd < 3 [
    show "Refuel : cause RND"
    report true ; Maybe we should give a lower priority to refuelling in this case
   ]
@@ -252,16 +282,42 @@ end
 
 
 
+;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+;          ATTACK BEHAVIOR
+;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 
+to-report attack-behavior [ enemy important?] ; opt1 : attracter , opt2 : optimal distance to attracter , opt3 : current angle 
+  
+  let prio 3
+  
+  if important? = true [
+    set prio 6
+  ]
+  
+  let eny turtle enemy
+  
+  let angle ( acos ( abs (  ( [ycor] of eny )  - ( ycor ) ) / ( distance-nowrap eny ) ) )
+  
+  report (list "B-attack" "attack" prio enemy ( drone-fire-range / 2 ) angle); current angle ?
+  
+end
 
+to attack 
+  
+  let enemy turtle opt1 behavior
 
+  if enemy = nobody or [dead?] of enemy or distance-nowrap enemy > drone-fire-range [
+    set behavior nobody
+    stop
+  ]
 
+  orbit
+  shoot-target enemy
 
-
-
-
-
+end
 
 
 
@@ -297,18 +353,25 @@ to drone-move-to [ tg ] ; abort-obstacles ]
   
   face-nowrap tg
   
-  while  [obstacle?] of patch-ahead 2 [
-    rt
+  let turn 20
+  
+  let tmp 0
+  
+  while [ [obstacle?] of patch-ahead 2 and distance-nowrap patch-ahead 2 < 3 and tmp * turn < 360  ] [ ; On sait jamais
+    rt turn
+    set tmp tmp + 1
   ]
   
   drone-move-fd
   
+  
+;  
 ;  if not abort-obstacles [ 
 ;    drone-move-fd
 ;    stop
 ;  ]
-;  
-;  ask geo [
+  
+;   ask geo [
 ;    
 ;   setxyz [xcor] of myself [ycor] of myself [zcor] of myself
 ;   face tg
@@ -366,9 +429,7 @@ end
 
 to drone-move-fd  
   
-  forward speed
- 
- ; if no obstacle ahead
+ forward speed
  
  set fuel (fuel - 1) ; Should depend on speed and altitude and y direction
  drone-check-crash

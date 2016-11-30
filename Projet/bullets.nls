@@ -1,8 +1,8 @@
 bullets-own [
+ shooter ; Le tireur
  target ; La turtle visee initialement
  speed
  damage ; Nombre de degats qui seront inflige a la cible
- 
 ]
 
 
@@ -10,7 +10,7 @@ to update-bullets
   ; Mise a jour d'une balle
   ask bullets [
     if not [dead?] of target [
-      if distance-nowrap target < 1 [ ; [ NOTE : ici les balles ne touchent que leurs cible et passe a travers quiconque sera sur leur chemin, la variable side ne sert alors a rien ]
+      if distance-nowrap target < 2 [ ; [ NOTE : ici les balles ne touchent que leurs cible et passe a travers quiconque sera sur leur chemin, la variable side ne sert alors a rien ]
         ; hit
         ask target [
           set life life - [damage] of myself 
@@ -18,6 +18,8 @@ to update-bullets
             set dead? true
           ]
           set hit? true
+          ;show (word "shooter" [shooter] of myself)
+          set shooter [shooter] of myself
         ]
         die
       ]

@@ -96,7 +96,7 @@ end
 
 to chase-target
   if distance-nowrap target < range [ ; Si la cible est a portee de tir
-    shoot-target ; On tire
+    shoot-target target ; On tire
   ]
   ifelse distance-nowrap target < vision [
     follow-target ; Sinon, si elle est encore visible, on la suit
@@ -107,17 +107,19 @@ to chase-target
 end
 
 ;; shoot ennemy 
-to shoot-target
+to shoot-target [tg]
   if ticks - last-shot > 15 / simu-speed  [ ; Attention : la cadence de tir ne devrais pas etre defini ici
     if play-sounds [sound:play-note "GUNSHOT" 128 64 0.2]
     set last-shot ticks
     hatch-bullets 1 [ 
-      if [breed] of myself = drones [ set damage 15 ]
+      if [breed] of myself = drones [ set damage 1 ]
       if [breed] of myself = enemies-ped [ set damage 10 ]
       set speed simu-speed * bullets-speed
       set shape "cannon";arrow 3"
-      face-nowrap target
+      face-nowrap tg
       setxyz xcor ycor zcor
+      set shooter [who] of myself
+      set target tg
     ]
   ]
 end
